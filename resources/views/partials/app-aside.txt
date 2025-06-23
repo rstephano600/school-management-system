@@ -1,0 +1,425 @@
+<aside class="app-sidebar">
+    <div class="sidebar-header px-4 py-4 text-center">
+        <h5 class="mb-0">School functions</h5>
+        <small class="text-muted">
+            @if(Auth::check())
+                {{ Auth::user()->university->name ?? 'School management' }}
+            @endif
+        </small>
+    </div>
+    
+    <div class="sidebar-menu py-2">
+        <!-- Super Admin Menu (Visible only to superadmins) -->
+        @if(Auth::user()->role === 'super_admin')
+                <!-- Dashboard -->
+        <ul class="list-unstyled">
+            <li class="{{ request()->is('dashboard') ? 'active' : '' }}">
+                <a href="">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+        </ul>
+        <div class="px-3 py-2 text-uppercase small fw-bold text-muted">Super Admin</div>
+        <ul class="list-unstyled">
+            <li class="superadmin {{ request()->is('admin/universities*') ? 'active' : '' }}">
+                <a href="">
+                    <i class="fas fa-fw fa-university"></i>
+                    <span>Schools</span>
+                </a>
+            </li>
+            
+            <li class="superadmin {{ request()->is('admin/users*') ? 'active' : '' }}">
+                <a href="">
+                    <i class="fas fa-fw fa-users-cog"></i>
+                    <span>System Users</span>
+                </a>
+            </li>
+            
+            <li class="superadmin {{ request()->is('admin/settings*') ? 'active' : '' }}">
+                <a href="">
+                    <i class="fas fa-fw fa-sliders-h"></i>
+                    <span>System Settings</span>
+                </a>
+            </li>
+        </ul>
+        @endif
+        
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       <br><br><br><br>
+       <br><br><br><br>
+       <br><br><br><br>
+       
+        <!-- University Admin Menu (Visible to superadmins and university admins) -->
+        @if(in_array(Auth::user()->role, ['superadmin', 'universityadmin']))
+                        <!-- Dashboard -->
+        <ul class="list-unstyled">
+            <li class="{{ request()->is('dashboard') ? 'active' : '' }}">
+                <a href="">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+        </ul>
+        <div class="px-3 py-2 text-uppercase small fw-bold text-muted">University Admin</div>
+        <ul class="list-unstyled">
+            <li class="universityadmin {{ request()->is('university/members*') ? 'active' : '' }}">
+                <a href="">
+                    <i class="fas fa-fw fa-user-friends"></i>
+                    <span>Members</span>
+                </a>
+            </li>
+            
+            <li class="universityadmin {{ request()->is('university/events*') ? 'active' : '' }}">
+                <a href="">
+                    <i class="fas fa-fw fa-calendar-alt"></i>
+                    <span>Events</span>
+                </a>
+            </li>
+            
+            <li class="universityadmin {{ request()->is('university/prayers*') ? 'active' : '' }}">
+                <a href="">
+                    <i class="fas fa-fw fa-hands-praying"></i>
+                    <span>Prayer Requests</span>
+                </a>
+            </li>
+            
+            <li class="universityadmin {{ request()->is('university/reports*') ? 'active' : '' }}">
+                <a href="">
+                    <i class="fas fa-fw fa-chart-bar"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="px-3 py-2 text-uppercase small fw-bold text-muted">Church Operations</div>
+    <ul class="list-unstyled">
+    <li class="universityadmin {{ request()->is('university/almanac*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-calendar-check"></i>
+            <span>Update Almanac</span>
+        </a>
+    </li>
+    
+    <li class="universityadmin {{ request()->is('university/timetables*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-clock-rotate-left"></i>
+            <span>Update Timetables</span>
+        </a>
+    </li>
+    
+    <li class="universityadmin {{ request()->is('university/posts*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-edit"></i>
+            <span>Create Posts</span>
+        </a>
+    </li>
+    
+    <li class="universityadmin {{ request()->is('university/announcements*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-bullhorn"></i>
+            <span>Post Announcements</span>
+        </a>
+    </li>
+    
+    <li class="universityadmin {{ request()->is('university/weekly-activities*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-book-bible"></i>
+            <span>Update Weekly Activities</span>
+        </a>
+    </li>
+    
+    <li class="universityadmin {{ request()->is('university/charity*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-hand-holding-dollar"></i>
+            <span>Organize Charity</span>
+        </a>
+    </li>
+    </ul>
+
+     <div class="px-3 py-2 text-uppercase small fw-bold text-muted">Ministry Teams</div>
+    <ul class="list-unstyled">
+    <li class="universityadmin {{ request()->is('university/choirs*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-people-group"></i>
+            <span>Coordinate Choirs</span>
+        </a>
+    </li>
+    
+    <li class="universityadmin {{ request()->is('university/praise-teams*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-people-arrows"></i>
+            <span>Organize Praise Teams</span>
+        </a>
+    </li>
+    
+    <li class="universityadmin {{ request()->is('university/singers*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-user-music"></i>
+            <span>Manage Singers</span>
+        </a>
+    </li>
+    </ul>
+
+    <div class="px-3 py-2 text-uppercase small fw-bold text-muted">Leadership</div>
+    <ul class="list-unstyled">
+    <li class="universityadmin {{ request()->is('university/leaders*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-user-shield"></i>
+            <span>Appoint Leaders</span>
+        </a>
+    </li>
+    
+    <li class="universityadmin {{ request()->is('university/guardians*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-user-lock"></i>
+            <span>Assign Guardians</span>
+        </a>
+    </li>
+    </ul>
+        @endif
+        
+        <!-- Member Menu (Visible to all authenticated users) -->
+                         <!-- Dashboard -->
+        <ul class="list-unstyled">
+            <li class="{{ request()->is('dashboard') ? 'active' : '' }}">
+                <a href="">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+        </ul>
+        <div class="px-3 py-2 text-uppercase small fw-bold text-muted">Member</div>
+        <ul class="list-unstyled">
+            <li class="member {{ request()->is('member/profile*') ? 'active' : '' }}">
+                <a href="">
+                    <i class="fas fa-fw fa-user"></i>
+                    <span>My Profile</span>
+                </a>
+            </li>
+            
+            <li class="member {{ request()->is('member/events*') ? 'active' : '' }}">
+                <a href="">
+                    <i class="fas fa-fw fa-calendar-check"></i>
+                    <span>My Events</span>
+                </a>
+            </li>
+            
+            <li class="member {{ request()->is('member/prayers*') ? 'active' : '' }}">
+                <a href="">
+                    <i class="fas fa-fw fa-pray"></i>
+                    <span>My Prayers</span>
+                </a>
+            </li>
+            
+            <li class="member {{ request()->is('member/groups*') ? 'active' : '' }}">
+                <a href="">
+                    <i class="fas fa-fw fa-users"></i>
+                    <span>Small Groups</span>
+                </a>
+            </li>
+        </ul>
+        
+        <!-- General Menu (Visible to all) -->
+        <div class="px-3 py-2 text-uppercase small fw-bold text-muted">General</div>
+        <ul class="list-unstyled">
+            <li class="user {{ request()->is('events*') ? 'active' : '' }}">
+                <a href="">
+                    <i class="fas fa-fw fa-calendar-day"></i>
+                    <span>Upcoming Events</span>
+                </a>
+            </li>
+            
+            <li class="user {{ request()->is('resources*') ? 'active' : '' }}">
+                <a href="">
+                    <i class="fas fa-fw fa-book"></i>
+                    <span>Resources</span>
+                </a>
+            </li>
+            
+            <li class="user {{ request()->is('about*') ? 'active' : '' }}">
+                <a href="">
+                    <i class="fas fa-fw fa-info-circle"></i>
+                    <span>About USCF</span>
+                </a>
+            </li>
+        </ul>
+   
+
+    <div class="px-3 py-2 text-uppercase small fw-bold text-muted">Church Information</div>
+<ul class="list-unstyled">
+    <li class="member {{ request()->is('almanac*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-calendar-days"></i>
+            <span>View Almanac</span>
+        </a>
+    </li>
+    
+    <li class="member {{ request()->is('timetables*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-clock"></i>
+            <span>View Timetables</span>
+        </a>
+    </li>
+    
+    <li class="member {{ request()->is('posts*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-newspaper"></i>
+            <span>View Posts</span>
+        </a>
+    </li>
+    
+    <li class="member {{ request()->is('announcements*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-bullhorn"></i>
+            <span>View Announcements</span>
+        </a>
+    </li>
+    
+    <li class="member {{ request()->is('weekly-activities*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-hands-praying"></i>
+            <span>Weekly Activities</span>
+            <small class="d-block ps-4 text-muted">Prayers & Readings</small>
+        </a>
+    </li>
+    
+    <li class="member {{ request()->is('charity*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-hand-holding-heart"></i>
+            <span>Charity Programs</span>
+        </a>
+    </li>
+</ul>
+
+<div class="px-3 py-2 text-uppercase small fw-bold text-muted">Church Teams</div>
+<ul class="list-unstyled">
+    <li class="member {{ request()->is('leaders*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-user-tie"></i>
+            <span>Church Leaders</span>
+        </a>
+    </li>
+    
+    <li class="member {{ request()->is('choirs*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-music"></i>
+            <span>Choirs</span>
+        </a>
+    </li>
+    
+    <li class="member {{ request()->is('praise-teams*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-drum"></i>
+            <span>Praise Teams</span>
+        </a>
+    </li>
+    
+    <li class="member {{ request()->is('singers*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-microphone"></i>
+            <span>Singers</span>
+        </a>
+    </li>
+</ul>
+
+<!-- Guardian View (if member is a guardian) -->
+@if(Auth::user()->is_guardian)
+<div class="px-3 py-2 text-uppercase small fw-bold text-muted">Guardian Access</div>
+<ul class="list-unstyled">
+    <li class="member {{ request()->is('guardian/dashboard*') ? 'active' : '' }}">
+        <a href="">
+            <i class="fas fa-fw fa-shield-alt"></i>
+            <span>Guardian Dashboard</span>
+        </a>
+    </li>
+</ul>
+@endif
+     </div>
+</aside>
