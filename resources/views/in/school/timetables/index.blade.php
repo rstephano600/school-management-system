@@ -8,10 +8,47 @@
     <a href="{{ route('timetables.create') }}" class="btn btn-primary mb-3">
         <i class="fas fa-plus"></i> Add Slot
     </a>
+    <div class="mb-3">
+    <a href="{{ route('timetables.calendar', request()->all()) }}" class="btn btn-outline-info">🗓 View Calendar</a>
+    <a href="{{ route('timetables.export.excel', request()->all()) }}" class="btn btn-outline-success">📥 Export Excel</a>
+    <a href="{{ route('timetables.export.pdf', request()->all()) }}" class="btn btn-outline-danger" target="_blank">📄 Export PDF</a>
+</div>
+
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
+
+    <form method="GET" class="row mb-3">
+    <div class="col-md-3">
+        <select name="academic_year_id" class="form-select" onchange="this.form.submit()">
+            <option value="">-- Academic Year --</option>
+            @foreach($academicYears as $year)
+                <option value="{{ $year->id }}" {{ request('academic_year_id') == $year->id ? 'selected' : '' }}>
+                    {{ $year->name }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select name="class_id" class="form-select" onchange="this.form.submit()">
+            <option value="">-- Class --</option>
+            @foreach($classes as $class)
+                <option value="{{ $class->id }}" {{ request('class_id') == $class->id ? 'selected' : '' }}>
+                    {{ $class->class_name ?? 'Class '.$class->id }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+    <div class="col-md-4">
+        <input type="text" name="search" class="form-control" placeholder="Search by teacher or subject"
+            value="{{ request('search') }}">
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+    </div>
+</form>
+
 
     <table class="table table-bordered">
         <thead class="table-light">
@@ -50,6 +87,9 @@
         </tbody>
     </table>
 
-    <div>{{ $timetables->links() }}</div>
+<div class="mt-3">
+    {{ $timetables->withQueryString()->links() }}
+</div>
+
 </div>
 @endsection

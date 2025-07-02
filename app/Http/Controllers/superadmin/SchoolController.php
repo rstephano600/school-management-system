@@ -44,11 +44,11 @@ class SchoolController extends Controller
             $validated['logo'] = $request->file('logo')->store('logos', 'public');
         }
 
-        $validated['tenant_id'] = auth()->id();
+        $validated['modified_by'] = auth()->id();
 
         School::create($validated);
 
-        return redirect()->route('schools.index')->with('success', 'School created successfully.');
+        return redirect()->route('superadmin.schools')->with('success', 'School created successfully.');
     }
 
     public function edit(School $school)

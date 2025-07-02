@@ -475,5 +475,95 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('sup
 });
 
 
+// GENERAL TIME TABLE
+use App\Http\Controllers\GeneralScheduleController;
+Route::middleware(['auth'])->prefix('school')->group(function () {
+    Route::resource('general-schedule', GeneralScheduleController::class)->names([
+        'index' => 'general-schedule.index',
+        'create' => 'general-schedule.create',
+        'store' => 'general-schedule.store',
+        'edit' => 'general-schedule.edit',
+        'update' => 'general-schedule.update',
+        'destroy' => 'general-schedule.destroy',
+        'show' => 'general-schedule.show',
+    ]);
+});
+
+use App\Http\Controllers\TestTimetableController;
+use App\Http\Controllers\ExamTimetableController;
+use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\AssignmentController;
+use App\Http\Controllers\AcademicRecordController;
+Route::middleware(['auth'])->prefix('school')->group(function () {
+    Route::resource('tests', TestTimetableController::class);
+    Route::resource('exams', ExamTimetableController::class);
+    Route::resource('holidays', HolidayTimetableController::class);
+    Route::resource('holidays', EventTimetableController::class);
+    Route::resource('school-events', SchoolEventController::class);
+});
+Route::get('school/timetables/calendar', [TimetableController::class, 'calendarView'])->name('timetables.calendar');
+Route::get('school/timetables/events', [TimetableController::class, 'calendarEvents'])->name('timetables.events');
+Route::get('school/timetables/export/excel', [TimetableController::class, 'exportExcel'])->name('timetables.export.excel');
+Route::get('school/timetables/export/pdf', [TimetableController::class, 'exportPdf'])->name('timetables.export.pdf');
+
+Route::get('school/simple-calendar', [CalendarController::class, 'siimplifiedWeeklyView'])->name('calendar.sample');
+Route::middleware(['auth'])->prefix('school')->group(function () {
+    Route::get('simple-calendar', [CalendarController::class, 'simplifiedWeeklyView'])->name('calendar.simple');
+});
+Route::get('school/simple-calendar/pdf', [CalendarController::class, 'exportPdf'])->name('calendar.pdf');
 
 
+// Grouping under middleware for authenticated users (optional but recommended)
+Route::middleware(['auth'])->group(function () {
+    Route::resource('assignments', AssignmentController::class);
+});
+
+
+Route::middleware(['auth'])->prefix('school')->name('academic-records.')->group(function () {
+    Route::get('academic-records', [AcademicRecordController::class, 'index'])->name('index');
+    Route::get('academic-records/create', [AcademicRecordController::class, 'create'])->name('create');
+    Route::post('academic-records', [AcademicRecordController::class, 'store'])->name('store');
+    Route::get('academic-records/{academicRecord}/edit', [AcademicRecordController::class, 'edit'])->name('edit');
+    Route::put('academic-records/{academicRecord}', [AcademicRecordController::class, 'update'])->name('update');
+    Route::get('academic-records/{academicRecord}', [AcademicRecordController::class, 'show'])->name('show');
+    Route::delete('academic-records/{academicRecord}', [AcademicRecordController::class, 'destroy'])->name('destroy');
+    Route::get('academic-records/reports', [AcademicRecordController::class, 'reports'])->name('reports');
+});
+
+use App\Http\Controllers\SubmissionController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('submissions', SubmissionController::class)->except(['edit', 'update']);
+});
+
+use App\Http\Controllers\ExamTypeController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('exam-types', ExamTypeController::class);
+});
+
+use App\Http\Controllers\GradeController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('grades', GradeController::class);
+});
+
+
+use App\Http\Controllers\ExamController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('exams', ExamController::class);
+});
+
+
+use App\Http\Controllers\ExamResultController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('exam-results', ExamResultController::class);
+    Route::post('exam-results/{examResult}/publish', [ExamResultController::class, 'publish'])->name('exam-results.publish');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('exam-results/import/{exam}', [ExamResultController::class, 'showImportForm'])->name('exam-results.import.form');
+    Route::post('exam-results/import/{exam}', [ExamResultController::class, 'import'])->name('exam-results.import');
+});

@@ -4,6 +4,7 @@
 @section('content')
 <div class="container">
     <h3 class="mb-4">Schedule New Class</h3>
+
     @if ($errors->any())
     <div class="alert alert-danger">
         <strong>Form has errors:</strong>
@@ -13,7 +14,8 @@
             @endforeach
         </ul>
     </div>
-@endif
+    @endif
+
     <form action="{{ route('classes.store') }}" method="POST">
         @csrf
 
@@ -47,53 +49,15 @@
             </select>
         </div>
 
-<div class="mb-3">
-    <label>Teacher</label>
-    <select name="teacher_id" class="form-select" required>
-        @foreach($teachers as $teacher)
-            @if ($teacher->user)
-                <option value="{{ $teacher->user_id }}">
-                    {{ $teacher->user->name }}
-                </option>
-            @endif
-        @endforeach
-    </select>
-</div>
-
-
         <div class="mb-3">
-            <label>Room</label>
-            <select name="room_id" class="form-select">
-                <option value="">Select Room (optional)</option>
-                @foreach($rooms as $room)
-                    <option value="{{ $room->id }}">{{ $room->name ?? $room->number }}</option>
+            <label>Teacher</label>
+            <select name="teacher_id" class="form-select" required>
+                @foreach($teachers as $teacher)
+                    @if ($teacher->user)
+                        <option value="{{ $teacher->user_id }}">{{ $teacher->user->name }}</option>
+                    @endif
                 @endforeach
             </select>
-        </div>
-
-        <div class="mb-3">
-            <label>Class Days</label>
-            <select name="class_days[]" multiple class="form-select">
-                @foreach(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'] as $day)
-                    <option value="{{ $day }}">{{ $day }}</option>
-                @endforeach
-            </select>
-            <small class="text-muted">Hold Ctrl (Cmd on Mac) to select multiple days</small>
-        </div>
-
-        <div class="mb-3">
-            <label>Start Time</label>
-            <input type="time" name="start_time" class="form-control" required>
-        </div>
-
-        <div class="mb-3">
-            <label>End Time</label>
-            <input type="time" name="end_time" class="form-control" required>
-        </div>
-
-        <div class="mb-3">
-            <label>Max Capacity</label>
-            <input type="number" name="max_capacity" class="form-control" required>
         </div>
 
         <div class="mb-3">

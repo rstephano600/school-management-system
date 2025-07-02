@@ -10,7 +10,7 @@ class School extends Model
     use HasFactory;
 
     protected $fillable = [
-        'tenant_id',
+        'modified_by',
         'name',
         'code',
         'address',

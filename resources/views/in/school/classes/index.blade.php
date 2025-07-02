@@ -48,9 +48,9 @@
                 <th>Section</th>
                 <th>Teacher</th>
                 <th>Room</th>
-                <th>Days</th>
-                <th>Time</th>
-                <th>Capacity</th>
+                <!-- <th>Days</th> -->
+                <!-- <th>Time</th> -->
+                <!-- <th>Capacity</th> -->
                 <th>Status</th>
                 <th class="text-end">Actions</th>
             </tr>
@@ -62,10 +62,10 @@
                 <td>{{ $class->grade->name ?? '-' }}</td>
                 <td>{{ $class->section->name ?? '-' }}</td>
                 <td>{{ $class->teacher->name ?? '-' }}</td>
-                <td>{{ $class->room->name ?? $class->room->number ?? '-' }}</td>
-                <td>{{ is_array($class->class_days) ? implode(', ', $class->class_days) : '-' }}</td>
-                <td>{{ \Carbon\Carbon::parse($class->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($class->end_time)->format('H:i') }}</td>
-                <td>{{ $class->current_enrollment }}/{{ $class->max_capacity }}</td>
+                <td>{{ $class->room->name ?? $section->room->number ?? '-' }}</td>
+                <!-- <td>{{ is_array($class->class_days) ? implode(', ', $class->class_days) : '-' }}</td> -->
+                <!-- <td>{{ \Carbon\Carbon::parse($class->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($class->end_time)->format('H:i') }}</td> -->
+                <!-- <td>{{ $class->current_enrollment }}/{{ $class->max_capacity }}</td> -->
                 <td>
                     <span class="badge {{ $class->status ? 'bg-success' : 'bg-danger' }}">
                         {{ $class->status ? 'Active' : 'Inactive' }}

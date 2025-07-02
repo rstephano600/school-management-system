@@ -121,6 +121,97 @@
                     </div>
                 </li>
 
+
+                <!-- Time table management Management -->
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#schoolTimetableMenu" aria-expanded="false">
+        <i class="fas fa-calendar-alt me-2"></i> School Timetable
+    </a>
+    <div id="schoolTimetableMenu" class="collapse">
+        <ul class="nav flex-column ps-4">
+            <li class="nav-item">
+                <a href="{{ route('calendar.simple') }}" class="nav-link">
+                    <i class="fas fa-calendar-week me-2"></i> General Timetable
+                </a>
+            </li>
+<li class="{{ request()->is('school/general-schedule*') ? 'active' : '' }}">
+    <a href="{{ route('general-schedule.index') }}" class="nav-link">
+        <i class="fas fa-calendar-alt me-2"></i>
+        <span>General School Timetable</span>
+    </a>
+</li>
+
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="fas fa-chalkboard-teacher me-2"></i> Class Sessions
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('tests.index') }}" class="nav-link">
+                    <i class="fas fa-pen-alt me-2"></i> Tests Timetable
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('exams.index') }}" class="nav-link">
+                    <i class="fas fa-file-alt me-2"></i> Exams Timetable
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'manage_classes' %}" class="nav-link">
+                    <i class="fas fa-umbrella-beach me-2"></i> Holidays
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'manage_classes' %}" class="nav-link">
+                    <i class="fas fa-bullhorn me-2"></i> Events
+                </a>
+            </li>
+        </ul>
+    </div>
+</li>
+
+
+<!-- Academic Records Management -->
+<li class="nav-item">
+    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="collapse" data-bs-target="#academicmanagement" aria-expanded="false" aria-controls="academicmanagement">
+        <i class="fas fa-book me-2"></i> Academic Records
+    </a>
+    <div id="academicmanagement" class="collapse">
+        <ul class="nav flex-column ps-4">
+            <li class="nav-item">
+                <a href="{{ route('assignments.index')}}" class="nav-link d-flex align-items-center">
+                    <i class="fas fa-tasks me-2"></i> Assignments
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('submissions.index')}}" class="nav-link d-flex align-items-center">
+                    <i class="fas fa-upload me-2"></i> Submissions
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('exam-types.index')}}" class="nav-link d-flex align-items-center">
+                    <i class="fas fa-layer-group me-2"></i> Exam Types
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('exams.index')}}" class="nav-link d-flex align-items-center">
+                    <i class="fas fa-pencil-alt me-2"></i> Exams
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('exam-results.index')}}" class="nav-link d-flex align-items-center">
+                    <i class="fas fa-poll me-2"></i> Exam Results
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('grades.index')}}" class="nav-link d-flex align-items-center">
+                    <i class="fas fa-chart-line me-2"></i> School Grades
+                </a>
+            </li>
+        </ul>
+    </div>
+</li>
+
                 <!-- Fee Management -->
 <li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#feeManagement">
