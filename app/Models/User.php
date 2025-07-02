@@ -2,34 +2,32 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
-        'school_id',
         'name',
         'email',
         'password',
         'role',
-        'tenant_id',
+        'status',
+        'school_id',
     ];
 
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -48,6 +46,8 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+
     public function school()
     {
     return $this->belongsTo(School::class);
@@ -69,5 +69,52 @@ public function subjects()
 {
     return $this->belongsToMany(Subject::class, 'subject_teacher', 'teacher_id', 'subject_id');
 }
+    /**
+     * Check if user is active
+     */
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
+    }
 
+    /**
+     * Check if user is pending approval
+     */
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    /**
+     * Check if user is suspended
+     */
+    public function isSuspended(): bool
+    {
+        return $this->status === 'suspended';
+    }
+
+    /**
+     * Activate user account
+     */
+    public function activate(): void
+    {
+        $this->update(['status' => 'active']);
+    }
+
+    /**
+     * Suspend user account
+     */
+    public function suspend(): void
+    {
+        $this->update(['status' => 'suspended']);
+    }
+
+    /**
+     * Block user account
+     */
+    public function block(): void
+    {
+        $this->update(['status' => 'blocked']);
+    }
 }
+

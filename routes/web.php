@@ -45,43 +45,62 @@ Route::get('/admin/dashboard', function () {
 })->middleware(['auth', 'role:admin']);
 
 Route::get('/dashboard', function () {
- $user = Auth::user();
+    $user = Auth::user();
+    return match ($user->role) {
+        'super_admin' => redirect()->route('superadmin.dashboard'),
+        'school_admin' => redirect()->route('schooladmin.dashboard'),
+        'director' => redirect()->route('director.dashboard'),
+        'manager' => redirect()->route('manager.dashboard'),
+        'head_master' => redirect()->route('headmaster.dashboard'),
+        'secretary' => redirect()->route('secretary.dashboard'),
+        'academic_master' => redirect()->route('academicmaster.dashboard'),
+        'teacher' => redirect()->route('teacher.dashboard'),
+        'staff' => redirect()->route('staff.dashboard'),
+        'school_doctor' => redirect()->route('schooldoctor.dashboard'),
+        'school_libralian' => redirect()->route('schoollibralian.dashboard'),
+        'parent' => redirect()->route('parent.dashboard'),
+        'student' => redirect()->route('student.dashboard'),
+        default => redirect()->route('user.dashboard')
+    };
 
-            switch ($user->role) {
-                case 'super_admin':
-                    return redirect()->route('superadmin.dashboard');
-                case 'school_admin':
-                    return redirect()->route('schooladmin.dashboard');
-                case 'director':
-                    return redirect()->route('director.dashboard');
-                case 'manager':
-                    return redirect()->route('manager.dashboard');
-                case 'head_master':
-                    return redirect()->route('headmaster.dashboard');
-                case 'secretary':
-                    return redirect()->route('secretary.dashboard');
-                case 'academic_master':
-                    return redirect()->route('academicmaster.dashboard');
-                case 'teacher':
-                    return redirect()->route('teacher.dashboard');
-                case 'staff':
-                    return redirect()->route('staff.dashboard');
-                case 'school_doctor':
-                    return redirect()->route('schooldoctor.dashboard');
-                case 'school_libralian':
-                    return redirect()->route('schoollibralian.dashboard');
-                case 'parent':
-                    return redirect()->route('parent.dashboard');
-                case 'student':
-                    return redirect()->route('student.dashboard');
-                default:
-                    return redirect()->route('user.dashboard');
-                }
-    // Default fallback
-    return redirect()->route('home');
-})->name('dashboard');
+})->middleware('auth')->name('dashboard');
+
+use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
+
+Route::middleware(['auth', 'role:teacher'])
+    ->prefix('teacher')
+    ->name('teacher.')
+    ->group(function () {
+        Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
+    });
 
 
+Route::middleware(['auth', 'role:student'])
+    ->prefix('student')
+    ->name('student.')
+    ->group(function () {
+        Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
+    });
+
+use App\Http\Controllers\Staff\DashboardController as StaffDashboardController;
+
+Route::middleware(['auth', 'role:staff'])
+    ->prefix('staff')
+    ->name('staff.')
+    ->group(function () {
+        Route::get('/dashboard', [StaffDashboardController::class, 'index'])->name('dashboard');
+    });
+
+use App\Http\Controllers\ParentUser\DashboardController as ParentDashboardController;
+
+Route::middleware(['auth', 'role:parent'])
+    ->prefix('parent')
+    ->name('parent.')
+    ->group(function () {
+        Route::get('/dashboard', [ParentDashboardController::class, 'index'])->name('dashboard');
+    });
+
+    
 Route::middleware(['auth', 'role:super_admin'])
     ->prefix('superadmin')
     ->name('superadmin.')
