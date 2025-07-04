@@ -21,6 +21,7 @@
             <label for="name" class="form-label">Grade Name</label>
             <input type="text" name="name" id="name" class="form-control" required>
         </div>
+        
 
         <div class="mb-3">
             <label for="code" class="form-label">Code</label>

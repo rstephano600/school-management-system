@@ -1,29 +1,27 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Grade extends Model
+class Division extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'school_id',
-        'min_score',
-        'max_score',
-        'grade_letter',
-        'grade_point',
+        'min_point',
+        'max_point',
+        'division',
         'remarks',
-        'level',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'min_score' => 'integer',
-        'max_score' => 'integer',
-        'grade_point' => 'float',
+        'min_point' => 'float',
+        'max_point' => 'float',
     ];
 
     public function school()

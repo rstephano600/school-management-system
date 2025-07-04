@@ -100,6 +100,15 @@ Route::middleware(['auth', 'role:parent'])
         Route::get('/dashboard', [ParentDashboardController::class, 'index'])->name('dashboard');
     });
 
+use App\Http\Controllers\Academicmaster\DashboardController as AcademicmasterDashboardController;
+
+Route::middleware(['auth', 'role:academic_master'])
+    ->prefix('academicmaster')
+    ->name('academicmaster.')
+    ->group(function () {
+        Route::get('/dashboard', [AcademicmasterDashboardController::class, 'index'])->name('dashboard');
+    });
+
     
 Route::middleware(['auth', 'role:super_admin'])
     ->prefix('superadmin')
@@ -193,7 +202,7 @@ Route::prefix('admin')->middleware(['auth', 'role:school_admin'])->group(functio
     Route::resource('fee-structures', FeeStructureController::class);
     Route::get('fee-payments/export', [FeePaymentController::class, 'export'])->name('fee-payments.export');
 });
-Route::middleware(['auth', 'role:school_admin'])->group(function () {
+Route::middleware(['auth', 'role:school_admin,academic_master'])->group(function () {
     Route::resource('academic-years', AcademicYearController::class);
 });
 Route::middleware(['auth', 'role:school_admin,secretary'])->prefix('admin')->group(function () {
@@ -201,9 +210,6 @@ Route::middleware(['auth', 'role:school_admin,secretary'])->prefix('admin')->gro
 });
 
 Route::resource('semesters', SemesterController::class)->middleware(['auth', 'role:school_admin']);
-
-
-
 
     Route::get('/school/grade-levels/index', [GradeLevelController::class, 'index'])->name('grade-levels.index');
     Route::get('/school/grade-levels/create', [GradeLevelController::class, 'create'])->name('grade-levels.create');
@@ -287,16 +293,7 @@ Route::middleware(['auth'])->prefix('school')->name('timetables.')->group(functi
 });
 
 
-use App\Http\Controllers\AssessmentController;
 
-Route::middleware(['auth'])->prefix('school')->name('assessments.')->group(function () {
-    Route::get('assessments', [AssessmentController::class, 'index'])->name('index');
-    Route::get('assessments/create', [AssessmentController::class, 'create'])->name('create');
-    Route::post('assessments', [AssessmentController::class, 'store'])->name('store');
-    Route::get('assessments/{assessment}/edit', [AssessmentController::class, 'edit'])->name('edit');
-    Route::put('assessments/{assessment}', [AssessmentController::class, 'update'])->name('update');
-    Route::delete('assessments/{assessment}', [AssessmentController::class, 'destroy'])->name('destroy');
-});
 
 
 use App\Http\Controllers\BehaviorRecordController;
@@ -561,11 +558,6 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('exam-types', ExamTypeController::class);
 });
 
-use App\Http\Controllers\GradeController;
-
-Route::middleware(['auth'])->group(function () {
-    Route::resource('grades', GradeController::class);
-});
 
 
 use App\Http\Controllers\ExamController;
@@ -586,3 +578,97 @@ Route::middleware(['auth'])->group(function () {
     Route::get('exam-results/import/{exam}', [ExamResultController::class, 'showImportForm'])->name('exam-results.import.form');
     Route::post('exam-results/import/{exam}', [ExamResultController::class, 'import'])->name('exam-results.import');
 });
+
+
+use App\Http\Controllers\StudentGradeLevelController;
+
+// Group routes under "students/{student}/grades"
+Route::prefix('students/{student}/grades')->middleware(['auth'])->group(function () {
+
+    // View all grade records for a student (with pagination, filters)
+    Route::get('/', [StudentGradeLevelController::class, 'index'])
+        ->name('student.grades.index');
+
+    // Show form to promote student to a new grade
+    Route::get('/promote', [StudentGradeLevelController::class, 'create'])
+        ->name('student.grades.promote');
+
+    // Handle promotion (store new grade level)
+    Route::post('/', [StudentGradeLevelController::class, 'store'])
+        ->name('student.grades.store');
+
+    // Mark student as graduated (optional)
+    Route::post('/graduate', [StudentGradeLevelController::class, 'graduate'])
+        ->name('student.grades.graduate');
+});
+
+
+use App\Http\Controllers\School\GradeController;
+
+Route::middleware(['auth'])->prefix('school')->name('grades.')->group(function () {
+    Route::get('grades', [\App\Http\Controllers\School\GradeController::class, 'index'])->name('index');
+    Route::get('grades/create', [\App\Http\Controllers\School\GradeController::class, 'create'])->name('create');
+    Route::post('grades', [\App\Http\Controllers\School\GradeController::class, 'store'])->name('store');
+    Route::get('grades/{grade}', [\App\Http\Controllers\School\GradeController::class, 'show'])->name('show');
+    Route::get('grades/{grade}/edit', [\App\Http\Controllers\School\GradeController::class, 'edit'])->name('edit');
+    Route::put('grades/{grade}', [\App\Http\Controllers\School\GradeController::class, 'update'])->name('update');
+    Route::delete('grades/{grade}', [\App\Http\Controllers\School\GradeController::class, 'destroy'])->name('destroy');
+});
+
+use App\Http\Controllers\School\DivisionController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('divisions', DivisionController::class);
+});
+
+
+// routes/web.php
+
+use App\Http\Controllers\School\AssessmentController;
+use App\Http\Controllers\School\AssessmentResultController;
+
+Route::middleware(['auth'])->prefix('school')->name('assessments.')->group(function () {
+    Route::get('assessments', [AssessmentController::class, 'index'])->name('index');
+    Route::get('assessments/create', [AssessmentController::class, 'create'])->name('create');
+    Route::post('assessments', [AssessmentController::class, 'store'])->name('store');
+    Route::get('assessments/{assessment}', [AssessmentController::class, 'show'])->name('show');
+    Route::get('assessments/{assessment}/edit', [AssessmentController::class, 'edit'])->name('edit');
+    Route::put('assessments/{assessment}', [AssessmentController::class, 'update'])->name('update');
+    Route::delete('assessments/{assessment}', [AssessmentController::class, 'destroy'])->name('destroy');
+});
+
+
+Route::get('assessments/{assessment}/results', [AssessmentResultController::class, 'index'])->name('assessments.results.index');
+Route::post('assessments/{assessment}/results', [AssessmentResultController::class, 'store'])->name('assessments.results.store');
+Route::get('students/{student}/assessment-summary', [AssessmentResultController::class, 'summary'])
+    ->name('students.assessments.summary');
+
+
+
+
+Route::middleware(['auth'])->prefix('school')->group(function () {
+
+    // Exams CRUD
+    Route::resource('exams', ExamController::class);
+
+    // Exam Results
+    Route::get('exams/{exam}/results', [ExamResultController::class, 'index'])
+        ->name('exams.results.index'); // View & enter results
+
+    Route::post('exams/{exam}/results', [ExamResultController::class, 'store'])
+        ->name('exams.results.store'); // Submit results
+
+    Route::post('exams/{exam}/results/publish', [ExamResultController::class, 'publish'])
+        ->name('exams.results.publish'); // Optional: publish results
+});
+
+Route::get('school/exams/the/{exam}/results', [ExamResultController::class, 'examresult'])
+    ->name('exam-results.index');
+
+
+Route::middleware(['auth'])->prefix('school')->group(function () {
+    Route::get('exam-results/general', [ExamResultController::class, 'generalResults'])
+        ->name('exam-results.general');
+});
+Route::get('exam-results/print', [ExamResultController::class, 'print'])->name('exam-results.print');
+Route::get('exam-results/Export/Excel', [ExamResultController::class, 'export'])->name('exam-results.export');

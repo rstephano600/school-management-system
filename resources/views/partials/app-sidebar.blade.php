@@ -246,14 +246,41 @@
         @if(Auth::user()->role === 'academic_master')
             <div class="px-3 py-2 text-uppercase small fw-bold text-muted">Academic Affairs</div>
             <ul class="list-unstyled">
+                <li><a href="{{ route('exam-results.general') }}" class="nav-link">All Exam Results</a></li>
+
                 <li><a href="{{ route('subjects.index') }}" class="nav-link"><i class="fas fa-book me-2"></i> Subjects</a></li>
                 <li><a href="{{ route('timetables.index') }}" class="nav-link"><i class="fas fa-calendar-alt me-2"></i> Timetables</a></li>
                 <li><a href="{{ route('exams.index') }}" class="nav-link"><i class="fas fa-file-alt me-2"></i> Examinations</a></li>
+                <li><a href="{{ route('exam-results.index') }}" class="nav-link"><i class="fas fa-poll me-2"></i> Examinations Results</a></li>
+
+
                 <li><a href="{{ route('exam-results.index') }}" class="nav-link"><i class="fas fa-poll me-2"></i> Results</a></li>
                 <li><a href="{{ route('assignments.index') }}" class="nav-link"><i class="fas fa-tasks me-2"></i> Assignments</a></li>
                 <li><a href="{{ route('assessments.index') }}" class="nav-link"><i class="fas fa-clipboard-check me-2"></i> Assessments</a></li>
                 <li><a href="{{ route('teachers.index') }}" class="nav-link"><i class="fas fa-chalkboard-teacher me-2"></i> Teachers</a></li>
             </ul>
+                        <!-- Academic Management -->
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#academicManagement">
+                    <i class="fas fa-graduation-cap me-2"></i> Academic Structure
+                </a>
+                <div id="academicManagement" class="collapse">
+                    <ul class="nav flex-column ps-4">
+                        <li><a href="{{ route('academic-years.index') }}" class="nav-link"><i class="fas fa-calendar me-1"></i> Academic Years</a></li>
+                        <li><a href="{{ route('semesters.index') }}" class="nav-link"><i class="fas fa-calendar-alt me-1"></i> Semesters</a></li>
+                        <li><a href="{{ route('grade-levels.index') }}" class="nav-link"><i class="fas fa-layer-group me-1"></i> Grade Levels</a></li>
+                        <li><a href="{{ route('classes.index') }}" class="nav-link"><i class="fas fa-school me-1"></i> Classes</a></li>
+                        <li><a href="{{ route('sections.index') }}" class="nav-link"><i class="fas fa-object-group me-1"></i> Sections</a></li>
+                        <li><a href="{{ route('subjects.index') }}" class="nav-link"><i class="fas fa-book me-1"></i> Subjects</a></li>
+                        <li><a href="{{ route('rooms.index') }}" class="nav-link"><i class="fas fa-door-closed me-1"></i> Rooms</a></li>
+
+                        <br>
+                        <li><a href="{{ route('grades.index') }}" class="nav-link">Grade Settings</a></li>
+                        <li><a href="{{ route('divisions.index') }}" class="nav-link">Divisions Settings</a></li>
+                    </ul>
+                </div>
+            </li>
+
         @endif
 
         <!-- Teacher Menu -->
@@ -268,6 +295,9 @@
                 <li><a href="{{ route('grades.index') }}" class="nav-link"><i class="fas fa-chart-line me-2"></i> Grades</a></li>
                 <li><a href="{{ route('timetables.index') }}" class="nav-link"><i class="fas fa-calendar-alt me-2"></i> My Schedule</a></li>
                 <li><a href="{{ route('behavior_records.index') }}" class="nav-link"><i class="fas fa-user-shield me-2"></i> Behavior Records</a></li>
+            <li><a href="{{ route('assessments.index') }}" class="nav-link">Assessments</a></li>
+<li><a href="{{ route('exam-results.general') }}" class="nav-link">All Exam Results</a></li>
+
             </ul>
         @endif
 
@@ -348,6 +378,8 @@
                 <li><a href="{{ route('announcements.index') }}" class="nav-link"><i class="fas fa-bullhorn me-2"></i> Announcements</a></li>
                 <li><a href="{{ route('events.index') }}" class="nav-link"><i class="fas fa-calendar-alt me-2"></i> School Events</a></li>
             </ul>
+
+
         @endif
 
     </div>

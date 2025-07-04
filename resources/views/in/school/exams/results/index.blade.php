@@ -1,60 +1,44 @@
 @extends('layouts.app')
+@section('title', 'Enter Exam Results')
 
 @section('content')
 <div class="container">
-    <h2 class="mb-3">Exam Results</h2>
+    <h4>Enter Results for: {{ $exam->title }} ({{ $exam->grade->name }})</h4>
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+    <form method="GET">
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search student..." class="form-control mb-3">
+    </form>
 
-    <a href="{{ route('exam-results.create') }}" class="btn btn-primary mb-3">Add Result</a>
+    <form action="{{ route('exams.results.store', $exam->id) }}" method="POST">
+        @csrf
 
-    <table class="table table-bordered table-hover">
-        <thead>
-            <tr>
-                <th>Exam</th>
-                <th>Student</th>
-                <th>Marks</th>
-                <th>Grade</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($results as $result)
-            <tr>
-                <td>{{ $result->exam->title ?? 'N/A' }}</td>
-                <td>{{ $result->student->first_name ?? '' }} {{ $result->student->last_name ?? '' }}</td>
-                <td>{{ $result->marks_obtained }}</td>
-                <td>{{ $result->grade }}</td>
-                <td>
-                    @if($result->published)
-                        <span class="badge bg-success">Published</span>
-                    @else
-                        <span class="badge bg-secondary">Draft</span>
-                    @endif
-                </td>
-                <td>
-                    <a href="{{ route('exam-results.show', $result) }}" class="btn btn-info btn-sm">View</a>
-                    <a href="{{ route('exam-results.edit', $result) }}" class="btn btn-warning btn-sm">Edit</a>
-                    <form action="{{ route('exam-results.destroy', $result) }}" method="POST" style="display:inline-block">
-                        @csrf
-                        @method('DELETE')
-                        <button class="btn btn-danger btn-sm" onclick="return confirm('Delete this result?')">Delete</button>
-                    </form>
-                    @if(!$result->published)
-                    <form action="{{ route('exam-results.publish', $result) }}" method="POST" style="display:inline-block">
-                        @csrf
-                        <button class="btn btn-success btn-sm" onclick="return confirm('Publish result?')">Publish</button>
-                    </form>
-                    @endif
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Admission #</th>
+                    <th>Student</th>
+                    <th>Marks Obtained</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($students as $student)
+                <tr>
+                    <td>{{ $student->admission_number }}</td>
+                    <td>{{ $student->user->name }}</td>
+                    <td>
+                        <input type="number" name="results[{{ $student->user_id }}]" 
+                               class="form-control @if($errors->has("results.{$student->user_id}")) is-invalid @endif"
+                               step="0.01"
+                               value="{{ old("results.{$student->user_id}", $existingResults[$student->user_id] ?? '') }}">
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
 
-    {{ $results->links() }}
+        {{ $students->appends(['search' => request('search')])->links() }}
+
+        <button type="submit" class="btn btn-primary mt-3">Save Results</button>
+    </form>
 </div>
 @endsection

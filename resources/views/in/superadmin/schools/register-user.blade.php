@@ -2,6 +2,16 @@
 
 @section('content')
 <div class="container">
+        @if ($errors->any())
+    <div class="alert alert-danger">
+        <strong>Form has errors:</strong>
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
     <h2>Register New User to {{ $school->name }}</h2>
     <form method="POST" action="{{ route('superadmin.schools.users.store', $school) }}">
         @csrf
@@ -28,6 +38,7 @@
                     <option value="parent">Parent</option>
                     <option value="teacher">Teacher</option>
                     <option value="admin">Admin</option>
+                    <option value="academic_master">Academic Master</option>
                 </select>
             </div>
         </div>

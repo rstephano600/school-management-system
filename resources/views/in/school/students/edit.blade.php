@@ -3,19 +3,18 @@
 @section('content')
 <div class="container">
     <h1>Edit Student</h1>
+        @if ($errors->any())
+    <div class="alert alert-danger">
+        <strong>Form has errors:</strong>
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
     <form action="{{ route('students.update', $student->user_id) }}" method="POST">
         @csrf
-
-
-        <div class="mb-3">
-            <label for="name" class="form-label">Student Name</label>
-            <input type="text" name="name" class="form-control" value="{{ $student->user->name }}" required>
-        </div>
-
-        <div class="mb-3">
-            <label for="email" class="form-label">Student Email</label>
-            <input type="email" name="email" class="form-control" value="{{ old('email', $student->user->email) }}" required>
-        </div>
 
         <div class="mb-3">
             <label for="admission_date" class="form-label">Admission Date</label>

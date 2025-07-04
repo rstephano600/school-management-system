@@ -23,6 +23,26 @@
         <button class="btn btn-outline-danger" type="button" data-bs-toggle="collapse" data-bs-target="#behaviourRecords">
             Behaviour Records
         </button>
+<a href="{{ route('students.assessments.summary', $student->user_id) }}" class="btn btn-outline-primary mt-2">
+    View Assessment Summary
+</a>
+
+                    <!-- Grade Progress -->
+<div class="collaps" id="gradeHistory">
+    <div class="card mb-3">
+        <div class="card-header bg-indigo text-white d-flex justify-content-between align-items-center">
+            <span>Grade Level History</span>
+            <a href="{{ route('student.grades.promote', $student->user_id) }}" class="btn btn-sm btn-light">
+                <i class="fas fa-arrow-up"></i> Promote Now
+            </a>
+        </div>
+        <div class="card-body">
+            <a href="{{ route('student.grades.index', $student->user_id) }}" class="btn btn-outline-primary">
+                View Grade History
+            </a>
+        </div>
+    </div>
+</div>
     </div>
 
 <!-- Personal Information -->

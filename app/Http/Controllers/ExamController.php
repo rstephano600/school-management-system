@@ -7,20 +7,46 @@ use App\Models\AcademicYear;
 use App\Models\GradeLevel;
 use App\Models\Subject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ExamController extends Controller
 {
-    public function index()
-    {
-        $schoolId = auth()->user()->school_id;
+public function index(Request $request)
+{
+    $user = auth()->user();
+    $schoolId = $user->school_id;
 
-        $exams = Exam::with(['examType', 'academicYear', 'grade', 'subject', 'creator'])
-            ->where('school_id', $schoolId)
-            ->latest()
-            ->paginate(20);
+    $query = Exam::with(['examType', 'academicYear', 'grade', 'subject', 'creator'])
+        ->where('school_id', $schoolId);
 
-        return view('in.school.exams.index', compact('exams'));
+    // Role-based access
+    if (!in_array($user->role, ['superadmin', 'school_admin', 'academic_master'])) {
+        $query->where('created_by', $user->id);
     }
+
+    // Filtering
+    if ($request->filled('academic_year_id')) {
+        $query->where('academic_year_id', $request->academic_year_id);
+    }
+
+    if ($request->filled('grade_id')) {
+        $query->where('grade_id', $request->grade_id);
+    }
+
+    if ($request->filled('subject_id')) {
+        $query->where('subject_id', $request->subject_id);
+    }
+
+    $exams = $query->latest()->paginate(20);
+
+    // For filter dropdowns
+    $academicYears = AcademicYear::where('school_id', $schoolId)->orderByDesc('start_date')->get();
+    $grades = GradeLevel::where('school_id', $schoolId)->get();
+    $subjects = Subject::where('school_id', $schoolId)->get();
+
+    return view('in.school.exams.index', compact('exams', 'academicYears', 'grades', 'subjects'));
+}
+
 
     public function create()
     {

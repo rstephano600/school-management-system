@@ -1,7 +1,21 @@
 <div class="row g-3">
-    <div class="col-md-6">
-        <label class="form-label">Name *</label>
-        <input type="text" name="name" class="form-control" value="{{ old('name', $academicYear->name ?? '') }}" required>
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+    <div class="mb-3">
+        <label for="year" class="form-label">Year name *</label>
+        <select name="name" id="year" class="form-select" required>
+            <option value="">-- Select Year --</option>
+            @for ($year = date('Y') + 1; $year >= 2015; $year--)
+                <option value="{{ $year }}">{{ $year }}</option>
+            @endfor
+        </select>
     </div>
     <div class="col-md-6">
         <label class="form-label">Start Date *</label>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ExamResult;
 use App\Models\Exam;
+use App\Models\Grade;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,21 +13,48 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow; // optional, if you're using headings
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\StudentsImport;
-
+use App\Exports\GeneralExamResultsExport;
+use Illuminate\Support\Facades\Auth;
 
 class ExamResultController extends Controller
 {
-    public function index()
-    {
-        $schoolId = auth()->user()->school_id;
+        public function index($examId, Request $request)
+{
+    $exam = Exam::with(['grade', 'subject'])->findOrFail($examId);
 
-        $results = ExamResult::with(['exam', 'student'])
-            ->where('school_id', $schoolId)
-            ->latest()
-            ->paginate(20);
+    $students = Student::with('user')
+        ->where('school_id', $exam->school_id)
+        ->where('grade_id', $exam->grade_id)
+        ->when($request->search, function ($q, $search) {
+            $q->where('admission_number', 'like', "%{$search}%")
+              ->orWhereHas('user', fn($u) => $u->where('name', 'like', "%{$search}%"));
+        })
+        ->orderBy('admission_number')
+        ->paginate(25);
 
-        return view('in.school.exams.results.index', compact('results'));
+    $existingResults = ExamResult::where('exam_id', $exam->id)
+        ->pluck('marks_obtained', 'student_id');
+
+    return view('in.school.exams.results.index', compact('exam', 'students', 'existingResults'));
+}
+
+public function examresult(Exam $exam)
+{
+    $user = Auth::user();
+
+    // Authorization
+    if ($user->role !== 'superadmin' && $user->school_id !== $exam->school_id) {
+        abort(403);
     }
+
+    // Fetch exam results with student and user details
+    $results = ExamResult::with(['student.user'])
+        ->where('exam_id', $exam->id)
+        ->orderBy('marks_obtained', 'desc')
+        ->paginate(20);
+
+    return view('in.school.exams.results.examresult', compact('exam', 'results'));
+}
 
     public function create()
     {
@@ -38,39 +66,32 @@ class ExamResultController extends Controller
         ]);
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'exam_id' => 'required|exists:exams,id',
-            'student_id' => 'required|exists:students,user_id',
-            'marks_obtained' => 'required|numeric|min:0',
-            'grade' => 'required|string|max:5',
-            'remarks' => 'nullable|string|max:1000',
-        ]);
+    
+public function store(Request $request, Exam $exam)
+{
+    $data = $request->input('results', []);
 
-        $exam = Exam::findOrFail($request->exam_id);
+    foreach ($data as $studentId => $score) {
+        if ($score === null || $score === '') continue;
 
-        $existing = ExamResult::where('exam_id', $request->exam_id)
-            ->where('student_id', $request->student_id)
+        $grade = Grade::where('school_id', $exam->school_id)
+            ->where('min_score', '<=', $score)
+            ->where('max_score', '>=', $score)
             ->first();
 
-        if ($existing) {
-            return redirect()->back()->withErrors(['duplicate' => 'Result for this student already exists for the selected exam.']);
-        }
-
-        ExamResult::create([
-            'school_id' => auth()->user()->school_id,
-            'exam_id' => $request->exam_id,
-            'student_id' => $request->student_id,
-            'marks_obtained' => $request->marks_obtained,
-            'grade' => $request->grade,
-            'remarks' => $request->remarks,
-            'published' => false,
-        ]);
-
-        return redirect()->route('exam-results.index')->with('success', 'Result recorded successfully.');
+        ExamResult::updateOrCreate(
+            ['exam_id' => $exam->id, 'student_id' => $studentId],
+            [
+                'school_id' => $exam->school_id,
+                'marks_obtained' => $score,
+                'grade' => $grade->grade_letter ?? 'N/A',
+                'remarks' => $grade->remarks ?? null,
+            ]
+        );
     }
 
+    return back()->with('success', 'Results saved successfully.');
+}
     public function show(ExamResult $examResult)
     {
         $this->authorizeAccess($examResult);
@@ -130,6 +151,37 @@ class ExamResultController extends Controller
         return redirect()->route('exam-results.index')->with('success', 'Result published.');
     }
 
+
+    public function generalResults(Request $request)
+{
+    $user = auth()->user();
+    $schoolId = $user->school_id;
+
+    $query = ExamResult::with(['student.user', 'exam.subject', 'exam.examType', 'exam.academicYear'])
+        ->where('school_id', $schoolId);
+
+    if ($request->filled('grade_id')) {
+        $query->whereHas('exam', fn($q) => $q->where('grade_id', $request->grade_id));
+    }
+
+    if ($request->filled('academic_year_id')) {
+        $query->whereHas('exam', fn($q) => $q->where('academic_year_id', $request->academic_year_id));
+    }
+
+    if ($request->filled('subject_id')) {
+        $query->whereHas('exam', fn($q) => $q->where('subject_id', $request->subject_id));
+    }
+
+    $results = $query->orderByDesc('created_at')->paginate(25);
+
+    $academicYears = \App\Models\AcademicYear::where('school_id', $schoolId)->latest()->get();
+    $subjects = \App\Models\Subject::where('school_id', $schoolId)->get();
+    $grades = \App\Models\GradeLevel::where('school_id', $schoolId)->get();
+
+    return view('in.school.exams.results.general', compact('results', 'academicYears', 'subjects', 'grades'));
+}
+
+
     private function authorizeAccess(ExamResult $result)
     {
         if ($result->school_id !== auth()->user()->school_id && auth()->user()->role !== 'superadmin') {
@@ -143,6 +195,23 @@ class ExamResultController extends Controller
         // Optional: Check access here
         return view('in.school.exams.results.import', compact('exam'));
     }
+
+
+
+public function print(Request $request)
+{
+    $results = $this->getFilteredResults($request)->get(); // no pagination
+    return view('in.school.exams.results.print', compact('results'));
+}
+
+
+public function exportExcel(Request $request)
+{
+    $results = $this->getFilteredResults($request)->get(); // no pagination
+
+    return Excel::download(new GeneralExamResultsExport($results), 'general_exam_results.xlsx');
+}
+
 
 public function import(Request $request, Exam $exam)
 {

@@ -33,7 +33,7 @@ class SchoolUserController extends Controller
     {
         $request->validate([
             'email' => 'required|email|unique:users',
-            'role' => 'required|in:student,parent,teacher,super_admin,school_admin',
+            'role' => 'required|in:student,parent,teacher,super_admin,school_admin,academic_master',
             'name' => 'required',
         ]);
 
