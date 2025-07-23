@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 
 use App\Models\Student;
+use App\Models\User;
 use App\Models\GradeLevel;
 use App\Models\AcademicYear;
 use App\Models\StudentGradeLevel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class StudentGradeLevelController extends Controller
 {
@@ -57,6 +59,12 @@ public function index(Request $request, $studentId)
             'academic_year_id' => 'required|exists:academic_years,id',
         ]);
 
+        DB::transaction(function () use ($request, $studentId) {
+        // 1. Update current grade_level_id in students table
+        $student = Student::findOrFail($studentId);
+        $student->grade_id = $request->grade_level_id;
+        $student->save();
+
         // Deactivate current grade
         StudentGradeLevel::where('student_id', $studentId)
             ->where('is_current', true)
@@ -72,8 +80,9 @@ public function index(Request $request, $studentId)
             'academic_year_id' => $request->academic_year_id,
             'start_date' => now(),
             'is_current' => true,
-            'changed_by' => auth()->id()
+            'changed_by'  => auth()->id(),
         ]);
+    });
 
         return redirect()->route('students.show', $studentId)
                          ->with('success', 'Student promoted successfully.');

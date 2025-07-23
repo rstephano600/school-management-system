@@ -37,6 +37,11 @@ Route::post('/register', [ RegisterController::class, 'store'])->name('register'
 Route::get('/dashboard',[StudentDashboardController::class, 'index'])->name('student.dashboard');
 Route::get('/resset-password', function () { return view('auth.resset-password'); })->name('resset-password');
 
+
+Route::get('/import/file', [UsersController::class, 'showimport'])->name('import.userfile');
+Route::get('/export', [UsersController::class, 'export'])->name('export.user');
+Route::post('/import', [UsersController::class, 'import'])->name('import.user');
+
 // DASHBOARD
 Route::get('/admin/dashboard', function () {
 
@@ -74,7 +79,6 @@ Route::middleware(['auth', 'role:teacher'])
         Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
     });
 
-
 Route::middleware(['auth', 'role:student'])
     ->prefix('student')
     ->name('student.')
@@ -109,6 +113,15 @@ Route::middleware(['auth', 'role:academic_master'])
         Route::get('/dashboard', [AcademicmasterDashboardController::class, 'index'])->name('dashboard');
     });
 
+use App\Http\Controllers\secretary\DashboardController as SecretaryDashboardController;
+
+Route::middleware(['auth', 'role:secretary'])
+    ->prefix('secretary')
+    ->name('secretary.')
+    ->group(function () {
+        Route::get('/dashboard', [SecretaryDashboardController::class, 'index'])->name('dashboard');
+    });
+
     
 Route::middleware(['auth', 'role:super_admin'])
     ->prefix('superadmin')
@@ -137,6 +150,8 @@ Route::middleware(['auth', 'role:super_admin'])
 
     });
 
+use App\Http\Controllers\school\SchoolUsersController;
+
 Route::middleware(['auth', 'role:school_admin'])
     ->prefix('schooladmin')
     ->group(function () {
@@ -159,6 +174,20 @@ Route::middleware(['auth', 'role:school_admin'])
     Route::get('/{id}/edit', [TeacherController::class, 'edit'])->name('edit');
     Route::put('/{id}', [TeacherController::class, 'update'])->name('update');
     Route::get('/{id}/delete', [TeacherController::class, 'destroy'])->name('destroy');
+
+});
+
+
+Route::middleware(['auth', 'role:school_admin'])
+    ->group(function () {
+        
+    Route::get('/school/users/list', [SchoolUsersController::class, 'index'])->name('users.index');
+    Route::get('/school/users/register', [SchoolUsersController::class, 'create'])->name('users.create');
+    Route::post('/school/users/Store', [SchoolUsersController::class, 'store'])->name('users.store');
+    Route::get('/school/users/Show/{user}', [SchoolUsersController::class, 'show'])->name('users.show');
+    Route::get('/school/users/edit/{user}', [SchoolUsersController::class, 'edit'])->name('users.edit');
+    Route::post('/school/users/update/{user}', [SchoolUsersController::class, 'update'])->name('users.update');
+    Route::get('/school/users/delete', [SchoolUsersController::class, 'destroy'])->name('users.destroy');
 
 });
 
@@ -187,9 +216,9 @@ Route::prefix('student/parent')->name('student.parent.')->group(function () {
 });
 Route::get('/students/{student}/parent/create', [ParentController::class, 'create'])->name('student.parent.create');
 Route::post('/students/{student}/parent', [ParentController::class, 'store'])->name('student.parent.store');
-Route::get('/students/{student}/parent/{user}/edit', [ParentController::class, 'edit'])->name('student.parent.edit');
+Route::get('/students/parent/{user}/edit', [ParentController::class, 'edit'])->name('student.parent.edit');
 Route::put('/students/{student}/parent/{user}', [ParentController::class, 'update'])->name('student.parent.update');
-Route::delete('/students/{student}/parent/{user}', [ParentController::class, 'destroy'])->name('student.parent.destroy');
+Route::delete('/students/parent/{user}', [ParentController::class, 'destroy'])->name('student.parent.destroy');
 
 Route::middleware(['auth', 'role:student'])->group(function () {
     Route::get('/student/fees', [StudentFeeController::class, 'index'])->name('student.fees.index');
@@ -644,8 +673,6 @@ Route::get('students/{student}/assessment-summary', [AssessmentResultController:
     ->name('students.assessments.summary');
 
 
-
-
 Route::middleware(['auth'])->prefix('school')->group(function () {
 
     // Exams CRUD
@@ -660,10 +687,12 @@ Route::middleware(['auth'])->prefix('school')->group(function () {
 
     Route::post('exams/{exam}/results/publish', [ExamResultController::class, 'publish'])
         ->name('exams.results.publish'); // Optional: publish results
+
+    Route::get('exams/the/{exam}/results', [ExamResultController::class, 'examresult'])
+    ->name('exam-results.index');
 });
 
-Route::get('school/exams/the/{exam}/results', [ExamResultController::class, 'examresult'])
-    ->name('exam-results.index');
+
 
 
 Route::middleware(['auth'])->prefix('school')->group(function () {
@@ -672,3 +701,22 @@ Route::middleware(['auth'])->prefix('school')->group(function () {
 });
 Route::get('exam-results/print', [ExamResultController::class, 'print'])->name('exam-results.print');
 Route::get('exam-results/Export/Excel', [ExamResultController::class, 'export'])->name('exam-results.export');
+
+
+
+// routes/web.php
+
+use App\Http\Controllers\teacher\TeacherController as TeacherClassController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/teacher/classes', [TeacherClassController::class, 'myclasses'])->name('teacher.classes.index');
+    Route::get('/teacher/students', [TeacherClassController::class, 'myStudents'])->name('teacher.students.index');
+
+});
+use App\Http\Controllers\teacher\TeacherAssessmentController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/teacher/assessments/create', [TeacherAssessmentController::class, 'create'])->name('teacher.assessments.create');
+    Route::post('/teacher/assessments', [TeacherAssessmentController::class, 'store'])->name('teacher.assessments.store');
+    Route::get('/teacher/semesters', [TeacherAssessmentController::class, 'getSemesters'])->name('teacher.semesters.get');
+});

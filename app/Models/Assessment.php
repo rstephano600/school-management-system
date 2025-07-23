@@ -9,11 +9,13 @@ class Assessment extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'school_id', 'title', 'type', 'grade_level_id',
-        'subject_id', 'academic_year_id', 'semester_id',
-        'due_date', 'description'
-    ];
+protected $fillable = [
+    'school_id', 'title', 'type', 'grade_level_id',
+    'subject_id', 'academic_year_id', 'semester_id',
+    'due_date', 'description', 'attachment',
+    'created_by', 'updated_by'  // ✅ Add these
+];
+
     protected $casts = [
     'due_date' => 'date',
 ];
@@ -22,5 +24,8 @@ class Assessment extends Model
     public function subject()        { return $this->belongsTo(Subject::class); }
     public function academicYear()   { return $this->belongsTo(AcademicYear::class); }
     public function semester()       { return $this->belongsTo(Semester::class); }
+    public function creator(){  return $this->belongsTo(User::class); }
+    public function updater(){  return $this->belongsTo(User::class); }
+
 }
 

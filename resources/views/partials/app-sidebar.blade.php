@@ -94,6 +94,7 @@
                         <li><a href="{{ route('teachers.index') }}" class="nav-link"><i class="fas fa-chalkboard-teacher me-1"></i> Teachers</a></li>
                         <li><a href="{{ route('schools.staff.index') }}" class="nav-link"><i class="fas fa-users me-1"></i> Staff</a></li>
                         <li><a href="{{ route('student.parent.index') }}" class="nav-link"><i class="fas fa-user-tie me-1"></i> Parents</a></li>
+                        <li><a href="{{ route('users.index') }}" class="nav-link"><i class="fas fa-users me-1"></i> All System Users</a></li>
                     </ul>
                 </div>
             </li>
@@ -145,8 +146,8 @@
                         <li><a href="{{ route('submissions.index') }}" class="nav-link"><i class="fas fa-upload me-1"></i> Submissions</a></li>
                         <li><a href="{{ route('assessments.index') }}" class="nav-link"><i class="fas fa-clipboard-check me-1"></i> Assessments</a></li>
                         <li><a href="{{ route('exam-types.index') }}" class="nav-link"><i class="fas fa-list-alt me-1"></i> Exam Types</a></li>
-                        <li><a href="{{ route('exam-results.index') }}" class="nav-link"><i class="fas fa-poll me-1"></i> Exam Results</a></li>
                         <li><a href="{{ route('grades.index') }}" class="nav-link"><i class="fas fa-chart-line me-1"></i> Grades</a></li>
+                        <li><a href="{{ route('exam-results.general') }}" class="nav-link">All Exam Results</a></li>
                     </ul>
                 </div>
             </li>
@@ -251,10 +252,9 @@
                 <li><a href="{{ route('subjects.index') }}" class="nav-link"><i class="fas fa-book me-2"></i> Subjects</a></li>
                 <li><a href="{{ route('timetables.index') }}" class="nav-link"><i class="fas fa-calendar-alt me-2"></i> Timetables</a></li>
                 <li><a href="{{ route('exams.index') }}" class="nav-link"><i class="fas fa-file-alt me-2"></i> Examinations</a></li>
-                <li><a href="{{ route('exam-results.index') }}" class="nav-link"><i class="fas fa-poll me-2"></i> Examinations Results</a></li>
 
 
-                <li><a href="{{ route('exam-results.index') }}" class="nav-link"><i class="fas fa-poll me-2"></i> Results</a></li>
+
                 <li><a href="{{ route('assignments.index') }}" class="nav-link"><i class="fas fa-tasks me-2"></i> Assignments</a></li>
                 <li><a href="{{ route('assessments.index') }}" class="nav-link"><i class="fas fa-clipboard-check me-2"></i> Assessments</a></li>
                 <li><a href="{{ route('teachers.index') }}" class="nav-link"><i class="fas fa-chalkboard-teacher me-2"></i> Teachers</a></li>
@@ -287,16 +287,18 @@
         @if(Auth::user()->role === 'teacher')
             <div class="px-3 py-2 text-uppercase small fw-bold text-muted">Teaching</div>
             <ul class="list-unstyled">
-                <li><a href="{{ route('classes.index') }}" class="nav-link"><i class="fas fa-school me-2"></i> My Classes</a></li>
-                <li><a href="{{ route('students.index') }}" class="nav-link"><i class="fas fa-user-graduate me-2"></i> My Students</a></li>
+                <li><a href="{{ route('teacher.classes.index') }}" class="nav-link"><i class="fas fa-school me-2"></i> My Classes</a></li>
+                <li><a href="{{ route('teacher.students.index') }}" class="nav-link"><i class="fas fa-user-graduate me-2"></i> My Students</a></li>
+                                        <li><a href="{{ route('assessments.index') }}" class="nav-link"><i class="fas fa-clipboard-check me-1"></i> Assessments</a></li>
                 <li><a href="{{ route('assignments.index') }}" class="nav-link"><i class="fas fa-tasks me-2"></i> Assignments</a></li>
-                <li><a href="{{ route('submissions.index') }}" class="nav-link"><i class="fas fa-upload me-2"></i> Submissions</a></li>
+                <!-- <li><a href="{{ route('teacher.assessments.create') }}" class="nav-link"><i class="fas fa-tasks me-2"></i> Create an assesment</a></li> -->
+                <!-- <li><a href="{{ route('submissions.index') }}" class="nav-link"><i class="fas fa-upload me-2"></i> Submissions</a></li> -->
                 <li><a href="{{ route('exams.index') }}" class="nav-link"><i class="fas fa-file-alt me-2"></i> Exams</a></li>
                 <li><a href="{{ route('grades.index') }}" class="nav-link"><i class="fas fa-chart-line me-2"></i> Grades</a></li>
                 <li><a href="{{ route('timetables.index') }}" class="nav-link"><i class="fas fa-calendar-alt me-2"></i> My Schedule</a></li>
                 <li><a href="{{ route('behavior_records.index') }}" class="nav-link"><i class="fas fa-user-shield me-2"></i> Behavior Records</a></li>
-            <li><a href="{{ route('assessments.index') }}" class="nav-link">Assessments</a></li>
-<li><a href="{{ route('exam-results.general') }}" class="nav-link">All Exam Results</a></li>
+                <li><a href="{{ route('assessments.index') }}" class="nav-link">Assessments</a></li>
+                <!-- <li><a href="{{ route('exam-results.general') }}" class="nav-link">All Exam Results</a></li> -->
 
             </ul>
         @endif
@@ -368,17 +370,21 @@
         @if(Auth::user()->role === 'student')
             <div class="px-3 py-2 text-uppercase small fw-bold text-muted">Student Portal</div>
             <ul class="list-unstyled">
-                <li><a href="{{ route('classes.index') }}" class="nav-link"><i class="fas fa-school me-2"></i> My Classes</a></li>
+                <li><a href="{{ route('notices.index') }}" class="nav-link"><i class="fas fa-bullhorn me-2"></i> School Notices</a></li>
+                <li><a href="{{ route('classes.index') }}" class="nav-link"><i class="fas fa-chalkboard me-2"></i> My Classes</a></li>
                 <li><a href="{{ route('subjects.index') }}" class="nav-link"><i class="fas fa-book me-2"></i> My Subjects</a></li>
-                <li><a href="{{ route('assignments.index') }}" class="nav-link"><i class="fas fa-tasks me-2"></i> Assignments</a></li>
-                <li><a href="{{ route('submissions.index') }}" class="nav-link"><i class="fas fa-upload me-2"></i> My Submissions</a></li>
-                <li><a href="{{ route('exam-results.index') }}" class="nav-link"><i class="fas fa-poll me-2"></i> My Results</a></li>
-                <li><a href="{{ route('timetables.index') }}" class="nav-link"><i class="fas fa-calendar-alt me-2"></i> My Schedule</a></li>
-                <li><a href="{{ route('library_books.index') }}" class="nav-link"><i class="fas fa-book-reader me-2"></i> Library</a></li>
+                <li><a href="{{ route('assignments.index') }}" class="nav-link"><i class="fas fa-money-check-alt me-2"></i> Fee Payment Records</a></li>
+                <li><a href="{{ route('submissions.index') }}" class="nav-link"><i class="fas fa-clipboard-check me-2"></i> My Assessment Results</a></li>
+                <li><a href="{{ route('exam-results.general') }}" class="nav-link"><i class="fas fa-poll me-2"></i> My Exam Results</a></li>
+                <li><a href="{{ route('exam-results.general') }}" class="nav-link"> <i class="fas fa-tasks me-2"></i> My Assessments</a></li>
+                <li><a href="{{ route('timetables.index') }}" class="nav-link"><i class="fas fa-calendar-alt me-2"></i> My Timetable</a></li>
+                <li><a href="{{ route('library_books.index') }}" class="nav-link"><i class="fas fa-book-reader me-2"></i> Library Resources</a></li>
                 <li><a href="{{ route('announcements.index') }}" class="nav-link"><i class="fas fa-bullhorn me-2"></i> Announcements</a></li>
                 <li><a href="{{ route('events.index') }}" class="nav-link"><i class="fas fa-calendar-alt me-2"></i> School Events</a></li>
+                <li><a href="{{ route('events.index') }}" class="nav-link"><i class="fas fa-notes-medical me-2"></i> My Health Record</a></li>
             </ul>
 
+            
 
         @endif
 

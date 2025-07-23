@@ -12,6 +12,7 @@
             <th>Grade</th>
             <th>Subject</th>
             <th>Due Date</th>
+            <th>Created By</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -21,7 +22,8 @@
             <td>{{ $assessment->title }}</td>
             <td>{{ $assessment->gradeLevel->name ?? '-' }}</td>
             <td>{{ $assessment->subject->name ?? '-' }}</td>
-            <td>{{ $assessment->due_date->format('d M Y') }}</td>
+            <td>{{ $assessment->due_date }}</td>
+            <td>{{ $assessment->creator->name ?? 'N/A' }}</td>
             <td>
                 <a href="{{ route('assessments.show', $assessment) }}" class="btn btn-sm btn-info">View</a>
                 <a href="{{ route('assessments.edit', $assessment) }}" class="btn btn-sm btn-warning">Edit</a>

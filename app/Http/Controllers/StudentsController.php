@@ -45,14 +45,16 @@ public function store(Request $request)
 {
     $validated = $request->validate([
         // New user fields
-        'name' => 'required|string|max:100',
         'email' => 'required|email|unique:users,email',
-        'password' => '12345678',
+        // 'password' => '12345678',
 
         // Student fields
         'admitted_by' => 'required|exists:users,id',
         'school_id' => 'required|exists:schools,id',
         'admission_number' => 'required|string|max:50|unique:students',
+        'fname' => 'required|string|max:100',
+        'mname' => 'required|string|max:100',
+        'lname' => 'required|string|max:100',
         'admission_date' => 'required|date',
         'grade_id' => 'nullable|exists:grade_levels,id',
         'section_id' => 'nullable|exists:sections,id',
@@ -68,11 +70,14 @@ public function store(Request $request)
         'previous_school_info' => 'nullable|json',
     ]);
 
+    $fullName = trim("{$request->fname} {$request->mname} {$request->lname}");
+    $password = strtoupper($validated['lname']); // Capitalize last name
+
     // Step 1: Create the user
     $user = User::create([
-        'name' => $validated['name'],
+        'name' => $fullName,
         'email' => $validated['email'],
-        'password' => Hash::make($validated['password']),
+        'password' => Hash::make($password),
         'role' => 'student',
         'school_id' => $validated['school_id'],
     ]);
@@ -99,7 +104,7 @@ public function store(Request $request)
     }
 
     return redirect()->route('students.show', $student->user_id)
-        ->with('success', 'Student account and grade level created successfully.');
+        ->with('success', 'Student account and grade level created successfully.' );
 }
 
 

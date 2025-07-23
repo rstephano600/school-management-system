@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container">
-    <h1 class="mb-4">Student: {{ $student->user->name }}</h1>
+    <h1 class="mb-4">Student: {{ $student->user->name }} - ({{ $student->admission_number }})</h1>
 
     <!-- Toggle Buttons -->
     <div class="mb-4 d-flex flex-wrap gap-2">
@@ -26,7 +26,9 @@
 <a href="{{ route('students.assessments.summary', $student->user_id) }}" class="btn btn-outline-primary mt-2">
     View Assessment Summary
 </a>
+    </div>
 
+    <div class="mb-4 d-flex flex-wrap gap-2">
                     <!-- Grade Progress -->
 <div class="collaps" id="gradeHistory">
     <div class="card mb-3">

@@ -15,7 +15,8 @@ use App\Models\FeeStructure;
 use App\Models\FeePayment;
 use App\Models\AssignedFee;
 use Carbon\Carbon;
-
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Hash;
 
 class StudentController extends Controller
 {
@@ -77,10 +78,16 @@ public function create()
     try {
         // Validate input
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+                    // New user fields
+        'email' => 'required|email|unique:users,email',
+        // 'password' => '12345678',
+
+            'fname' => 'required|string|max:100',
+            'mname' => 'required|string|max:100',
+            'lname' => 'required|string|max:100',
             'admission_date' => 'required|date',
             'grade_id' => 'required|exists:grade_levels,id',
+            'section_id' => 'nullable|exists:sections,id',
             'date_of_birth' => 'required|date',
             'gender' => ['required', 'in:male,female'],
             'blood_group' => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-,O'],
@@ -92,12 +99,16 @@ public function create()
             'previous_school_info' => ['nullable', 'array'],
         ]);
 
+        $fullName = trim("{$request->fname} {$request->mname} {$request->lname}");
+        $password = strtoupper($validated['lname']); // Capitalize last name
+
+
         // Create user
         $user = User::create([
             'school_id' => auth()->user()->school_id,
-            'name' => $validated['name'],
+            'name' => $fullName,
             'email' => $validated['email'],
-            'password' => bcrypt('12345678'), // Hash password!
+            'password' => Hash::make($password),
             'role' => 'student',
         ]);
 
@@ -119,8 +130,12 @@ public function create()
             'admitted_by' => auth()->id(),
             'school_id' => auth()->user()->school_id,
             'admission_number' => $admissionNumber,
+            'fname' => $validated['fname'],
+            'mname' => $validated['mname'],
+            'lname' => $validated['lname'],
             'admission_date' => $validated['admission_date'],
             'grade_id' => $validated['grade_id'],
+            'section_id' => $validated['section_id'],
             'date_of_birth' => $validated['date_of_birth'],
             'gender' => $validated['gender'],
             'blood_group' => $validated['blood_group'] ?? null,
@@ -162,9 +177,9 @@ public function show(Request $request, Student $student)
 
     // fetch all academic years between start and end
     $activeYears = AcademicYear::where('school_id', $student->school_id)
-        ->where('start_date', '>=', $startDate)
-        ->where('start_date', '<=', $endDate)
-        ->get();
+       ->where('end_date', '>=', $startDate) // Changed this line
+       ->where('start_date', '<=', $endDate)
+       ->get();
 
     $feesByYear = [];
 

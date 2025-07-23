@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\HealthRecord;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+
 
 class HealthRecordController extends Controller
 {

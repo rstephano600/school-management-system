@@ -17,6 +17,9 @@ class Student extends Model
         'admitted_by',
         'school_id',
         'admission_number',
+        'fname',
+        'mname',
+        'lname',
         'admission_date',
         'grade_id',
         'section_id',
@@ -101,4 +104,9 @@ public function father()
 {
     return $this->parents()->where('relation_type', 'father')->first();
 }
+public function currentClass()
+{
+    return $this->belongsTo(GradeLevel::class, 'current_class_id');
+}
+
 }

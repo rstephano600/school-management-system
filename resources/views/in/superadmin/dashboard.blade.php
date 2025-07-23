@@ -13,12 +13,16 @@
     <h2>Welcome, {{ Auth::user()->name }}!</h2>
     <p>You are logged in to your dashboard.</p>
 
-
-
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-body">
         <h4 class="card-title">Welcome, {{ auth()->user()->name ?? 'Super Admin' }}</h4>
         <p class="text-muted">This is your super admin dashboard for managing the entire school system.</p>
+    </div>
+</div>
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <a href="{{ route('import.userfile') }}">Import users</a>
+        <a href="{{ route('export.user') }}">Export Users</a>
     </div>
 </div>
 

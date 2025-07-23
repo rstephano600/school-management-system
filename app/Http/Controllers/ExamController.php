@@ -20,7 +20,7 @@ public function index(Request $request)
         ->where('school_id', $schoolId);
 
     // Role-based access
-    if (!in_array($user->role, ['superadmin', 'school_admin', 'academic_master'])) {
+    if (!in_array($user->role, ['superadmin', 'school_admin', 'academic_master', 'teacher'])) {
         $query->where('created_by', $user->id);
     }
 
