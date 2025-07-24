@@ -116,5 +116,19 @@ public function subjects()
     {
         $this->update(['status' => 'blocked']);
     }
+
+
+    /**
+     * Check if user is a teacher
+     */
+    public function isTeacher()
+    {
+        return $this->teacher()->exists();
+    }
+
+    /**
+     * Get user's school
+     */
+
 }
 

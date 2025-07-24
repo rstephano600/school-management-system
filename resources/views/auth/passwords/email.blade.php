@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Smart School Management System</title>
+    <title>Forgot Password | Smart School Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,7 +11,6 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient to (right, #6a11cb, #2575fc); /* A gentle gradient for the background */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -84,13 +83,13 @@
             color: #721c24;
             border-color: #f5c6cb;
         }
-        .forgot-password {
+        .back-to-login {
             color: #007bff;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s ease;
         }
-        .forgot-password:hover {
+        .back-to-login:hover {
             color: #0056b3;
             text-decoration: underline;
         }
@@ -108,24 +107,19 @@
 <div class="container d-flex justify-content-center align-items-center min-vh-100">
     <div class="card shadow-lg w-100" style="max-width: 420px;">
         <div class="card-header text-center">
-            {{-- Assuming you have a logo image in your public directory, e.g., public/images/school_logo.png --}}
             <img src="{{ asset('assets/img/cns.png') }}" class="logo">
-            <h4>Welcome Back!</h4>
-            <p class="mb-0">Please sign in to continue</p>
+            <h4>Forgot Your Password?</h4>
+            <p class="mb-0">Enter your email to receive a password reset link.</p>
         </div>
         <div class="card-body p-4">
 
-            @if(session('status'))
-                <div class="alert alert-success">{{ session('status') }}</div>
-            @endif
-
-            @if($errors->any())
-                <div class="alert alert-danger">
-                    <strong>Oops!</strong> {{ $errors->first() }}
+            @if (session('status'))
+                <div class="alert alert-success" role="alert">
+                    {{ session('status') }}
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('login.submit') }}">
+            <form method="POST" action="{{ route('password.email') }}">
                 @csrf
 
                 <div class="mb-3">
@@ -141,24 +135,12 @@
                     @enderror
                 </div>
 
-                <div class="mb-4"> {{-- Increased bottom margin for password field --}}
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password"
-                           class="form-control @error('password') is-invalid @enderror"
-                           id="password"
-                           name="password"
-                           required autocomplete="current-password">
-                    @error('password')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="d-grid gap-2"> {{-- Added gap for potential multiple buttons --}}
-                    <button type="submit" class="btn btn-primary">Login</button>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">Send Password Reset Link</button>
                 </div>
 
                 <div class="mt-3 text-center">
-                    <a href="{{ route('password.request') }}" class="forgot-password">Forgot password?</a>
+                    <a href="{{ route('login') }}" class="back-to-login">Back to Login</a>
                 </div>
             </form>
         </div>

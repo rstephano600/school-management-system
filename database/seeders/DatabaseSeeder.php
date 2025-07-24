@@ -12,6 +12,10 @@ public function run(): void
 {
     $this->call([
         UsersTableSeeder::class,
+        TimetableSeeder::class,
+        FeePaymentSeeder::class,
+        LibraryBookSeeder::class,
+        // HealthRecordSeeder::class,
     ]);
 }
 

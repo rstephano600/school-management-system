@@ -17,6 +17,19 @@
             @endfor
         </select>
     </div>
+    <div class="mb-3">
+    <label for="code" class="form-label">Academic Year Code</label>
+    <input type="text" class="form-control" id="code" name="code" value="{{ old('code', $academicYear->code ?? '') }}">
+</div>
+
+<div class="mb-3">
+    <label for="status" class="form-label">Status</label>
+    <select class="form-select" id="status" name="status">
+        <option value="active" {{ old('status', $academicYear->status ?? '') == 'active' ? 'selected' : '' }}>Active</option>
+        <option value="inactive" {{ old('status', $academicYear->status ?? '') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+    </select>
+</div>
+
     <div class="col-md-6">
         <label class="form-label">Start Date *</label>
         <input type="date" name="start_date" class="form-control" value="{{ old('start_date', $academicYear->start_date ?? '') }}" required>

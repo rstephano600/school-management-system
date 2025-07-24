@@ -126,6 +126,7 @@
                     <ul class="nav flex-column ps-4">
                         <li><a href="{{ route('timetables.index') }}" class="nav-link"><i class="fas fa-table me-1"></i> Class Timetables</a></li>
                         <li><a href="{{ route('general-schedule.index') }}" class="nav-link"><i class="fas fa-calendar-week me-1"></i> General Schedule</a></li>
+                        <li><a href="{{ route('timetable.index') }}" class="nav-link"><i class="fas fa-calendar-week me-1"></i> General TimeTable</a></li>
                         <li><a href="{{ route('calendar.simple') }}" class="nav-link"><i class="fas fa-calendar me-1"></i> Calendar View</a></li>
                         <li><a href="{{ route('tests.index') }}" class="nav-link"><i class="fas fa-pen-alt me-1"></i> Tests Schedule</a></li>
                         <li><a href="{{ route('exams.index') }}" class="nav-link"><i class="fas fa-file-alt me-1"></i> Exams Schedule</a></li>
@@ -161,6 +162,7 @@
                     <ul class="nav flex-column ps-4">
                         <li><a href="{{ route('fee-structures.index') }}" class="nav-link"><i class="fas fa-coins me-1"></i> Fee Structures</a></li>
                         <li><a href="{{ route('admin.fee-payments.search') }}" class="nav-link"><i class="fas fa-credit-card me-1"></i> Record Payment</a></li>
+                        <li><a href="{{ route('fee-payments.index') }}" class="nav-link"><i class="fas fa-credit-card me-1"></i> Payment Records</a></li>
                         <li><a href="{{ route('fee-payments.export') }}" class="nav-link"><i class="fas fa-file-export me-1"></i> Export Reports</a></li>
                     </ul>
                 </div>
@@ -227,6 +229,29 @@
                     <i class="fas fa-cog me-2"></i> School Settings
                 </a>
             </li>
+
+            <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#exportManagement">
+        <i class="fas fa-file-export me-2"></i> Export options
+    </a>
+    <div id="exportManagement" class="collapse">
+        <ul class="nav flex-column ps-4">
+            <li><a href="#" class="nav-link"><i class="fas fa-users me-1"></i> User Export</a></li>
+            <li><a href="#" class="nav-link"><i class="fas fa-user-graduate me-1"></i> Students Export</a></li>
+            <li><a href="#" class="nav-link"><i class="fas fa-chalkboard-teacher me-1"></i> Teachers Export</a></li>
+            <li><a href="#" class="nav-link"><i class="fas fa-user-tie me-1"></i> Staff Export</a></li>
+            <li><a href="#" class="nav-link"><i class="fas fa-user-friends me-1"></i> Parents Export</a></li>
+            <li><a href="#" class="nav-link"><i class="fas fa-calendar-week me-1"></i> TimeTable Export</a></li>
+            <li><a href="#" class="nav-link"><i class="fas fa-money-bill-wave me-1"></i> Fee Payment Export</a></li>
+            <li><a href="#" class="nav-link"><i class="fas fa-building me-1"></i> Student Hostel Export</a></li>
+            <li><a href="#" class="nav-link"><i class="fas fa-book me-1"></i> Books Export</a></li>
+            <li><a href="#" class="nav-link"><i class="fas fa-notes-medical me-1"></i> Health Record Export</a></li>
+            <li><a href="#" class="nav-link"><i class="fas fa-frown me-1"></i> Behaviour Export</a></li>
+            <li><a href="#" class="nav-link"><i class="fas fa-user-check me-1"></i> Attendance Export</a></li>
+            <li><a href="#" class="nav-link"><i class="fas fa-clipboard-list me-1"></i> Logs Export</a></li>
+        </ul>
+    </div>
+</li>
         @endif
 
         <!-- Head Master Menu -->

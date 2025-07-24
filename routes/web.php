@@ -36,6 +36,14 @@ Route::get('/register', [ RegisterController::class, 'showRegistrationForm'])->n
 Route::post('/register', [ RegisterController::class, 'store'])->name('register');
 Route::get('/dashboard',[StudentDashboardController::class, 'index'])->name('student.dashboard');
 Route::get('/resset-password', function () { return view('auth.resset-password'); })->name('resset-password');
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+
+// Password Reset Routes
+Route::get('password/forgot', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
 
 
 Route::get('/import/file', [UsersController::class, 'showimport'])->name('import.userfile');
@@ -230,7 +238,17 @@ Route::middleware(['auth', 'role:school_admin'])->group(function () {
 Route::prefix('admin')->middleware(['auth', 'role:school_admin'])->group(function () {
     Route::resource('fee-structures', FeeStructureController::class);
     Route::get('fee-payments/export', [FeePaymentController::class, 'export'])->name('fee-payments.export');
+
 });
+
+Route::prefix('fee-payments')->name('fee-payments.')->group(function () {
+    Route::get('/', [FeePaymentController::class, 'index'])->name('index');
+    Route::get('/{id}', [FeePaymentController::class, 'show'])->name('show');
+    Route::get('/export/data', [FeePaymentController::class, 'export'])->name('export');
+    Route::get('/student/payment-summary', [FeePaymentController::class, 'getStudentPaymentSummary'])->name('student.payment-summary');
+});
+
+
 Route::middleware(['auth', 'role:school_admin,academic_master'])->group(function () {
     Route::resource('academic-years', AcademicYearController::class);
 });
@@ -719,4 +737,35 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/teacher/assessments/create', [TeacherAssessmentController::class, 'create'])->name('teacher.assessments.create');
     Route::post('/teacher/assessments', [TeacherAssessmentController::class, 'store'])->name('teacher.assessments.store');
     Route::get('/teacher/semesters', [TeacherAssessmentController::class, 'getSemesters'])->name('teacher.semesters.get');
+});
+
+
+
+// Add these routes to your web.php file
+
+use App\Http\Controllers\school\TimetableController as SchoolTimetableController;
+
+Route::middleware(['auth'])->group(function () {
+    // Timetable routes
+    Route::get('/timetable', [SchoolTimetableController::class, 'index'])->name('timetable.index');
+    Route::post('/timetable/export', [SchoolTimetableController::class, 'export'])->name('timetable.export');
+    
+    // Additional timetable management routes (optional)
+    Route::get('/timetable/create', [SchoolTimetableController::class, 'create'])->name('timetable.create');
+    Route::post('/timetable', [SchoolTimetableController::class, 'store'])->name('timetable.store');
+    Route::get('/timetable/{id}/edit', [SchoolTimetableController::class, 'edit'])->name('timetable.edit');
+    Route::put('/timetable/{id}', [SchoolTimetableController::class, 'update'])->name('timetable.update');
+    Route::delete('/timetable/{id}', [SchoolTimetableController::class, 'destroy'])->name('timetable.destroy');
+    
+    // AJAX routes for dynamic loading
+    Route::get('/timetable/ajax/sections/{grade_id}', [TimetableController::class, 'getSectionsByGrade']);
+    Route::get('/timetable/ajax/conflicts', [TimetableController::class, 'checkConflicts']);
+});
+
+use App\Http\Controllers\school\UserExportController;
+Route::middleware(['auth'])->group(function () {
+    // Timetable routes
+    Route::get('/school/students', [UserExportController::class, 'students'])->name('export.students');
+    Route::post('/Students/exportStudents', [UserExportController::class, 'exportStudents'])->name('export.exportStudents');
+
 });

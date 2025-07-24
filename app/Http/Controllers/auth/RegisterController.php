@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use Illuminate\Validation\Rules\Password;
 
 class RegisterController extends Controller
 {
@@ -30,8 +31,27 @@ class RegisterController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:50'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required'],
+            // Email validation: required, valid format, lowercase, unique in users table
+    'email' => [
+        'required',
+        'string',
+        'lowercase',
+        'email:rfc,dns',
+        'max:255',
+        'unique:users,email',
+    ],
+            // Password validation: required, at least 8 characters, mix of letters, numbers, symbols
+    'password' => [
+        'required',
+        'string',
+        Password::min(8)
+            ->mixedCase()     // at least one uppercase and one lowercase
+            ->letters()       // at least one letter
+            ->numbers()       // at least one number
+            ->symbols()       // at least one symbol
+            ->uncompromised(), // not found in known data leaks
+    ],
+
             'school_id' => ['required', 'exists:schools,id'],
             // 'role' => ['required'],
             // 'tenant_id' => ['required'],
