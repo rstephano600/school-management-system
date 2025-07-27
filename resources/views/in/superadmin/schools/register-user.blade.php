@@ -34,6 +34,7 @@
                 <select name="role" class="form-control" required>
                     <option value="">-- Select Role --</option>
                     <option value="school_admin">School Admin</option>
+                    <option value="school_creator">School creator</option>
                     <option value="student">Student</option>
                     <option value="parent">Parent</option>
                     <option value="teacher">Teacher</option>

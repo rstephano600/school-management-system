@@ -6,6 +6,7 @@ use App\Models\ExamType;
 use App\Models\AcademicYear;
 use App\Models\GradeLevel;
 use App\Models\Subject;
+use App\Models\Semester;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,7 +17,7 @@ public function index(Request $request)
     $user = auth()->user();
     $schoolId = $user->school_id;
 
-    $query = Exam::with(['examType', 'academicYear', 'grade', 'subject', 'creator'])
+    $query = Exam::with(['examType', 'academicYear', 'semester', 'grade', 'subject', 'creator'])
         ->where('school_id', $schoolId);
 
     // Role-based access
@@ -27,6 +28,13 @@ public function index(Request $request)
     // Filtering
     if ($request->filled('academic_year_id')) {
         $query->where('academic_year_id', $request->academic_year_id);
+    }
+    if ($request->filled('semester_id')) {
+        $query->where('semester_id', $request->semester_id);
+    }
+
+    if ($request->filled('exam_type_id')) {
+        $query->where('exam_type_id', $request->exam_type_id);
     }
 
     if ($request->filled('grade_id')) {
@@ -43,8 +51,10 @@ public function index(Request $request)
     $academicYears = AcademicYear::where('school_id', $schoolId)->orderByDesc('start_date')->get();
     $grades = GradeLevel::where('school_id', $schoolId)->get();
     $subjects = Subject::where('school_id', $schoolId)->get();
+    $examTypes = ExamType::where('school_id', $schoolId)->get();
+    $semesters = Semester::where('school_id', $schoolId)->get();
 
-    return view('in.school.exams.index', compact('exams', 'academicYears', 'grades', 'subjects'));
+    return view('in.school.exams.index', compact('exams', 'examTypes', 'academicYears', 'semesters', 'grades', 'subjects'));
 }
 
 
@@ -57,6 +67,7 @@ public function index(Request $request)
             'academicYears' => AcademicYear::where('school_id', $schoolId)->get(),
             'grades' => GradeLevel::where('school_id', $schoolId)->get(),
             'subjects' => Subject::where('school_id', $schoolId)->get(),
+            'semesters' => Semester::where('school_id', $schoolId)->get(),
         ]);
     }
 
@@ -68,6 +79,7 @@ public function index(Request $request)
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'academic_year_id' => 'required|exists:academic_years,id',
+            'semester_id' => 'required|exists:semesters,id',
             'grade_id' => 'nullable|exists:grade_levels,id',
             'subject_id' => 'nullable|exists:subject,id',
             'total_marks' => 'required|numeric|min:1',
@@ -83,6 +95,7 @@ public function index(Request $request)
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
             'academic_year_id' => $request->academic_year_id,
+            'semester_id' => $request->semester_id,
             'grade_id' => $request->grade_id,
             'subject_id' => $request->subject_id,
             'total_marks' => $request->total_marks,
@@ -112,6 +125,7 @@ public function index(Request $request)
             'academicYears' => AcademicYear::where('school_id', $schoolId)->get(),
             'grades' => GradeLevel::where('school_id', $schoolId)->get(),
             'subjects' => Subject::where('school_id', $schoolId)->get(),
+            'semester' => Semester::where('school_id', $schoolId)->get(),
         ]);
     }
 
@@ -125,6 +139,7 @@ public function index(Request $request)
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'academic_year_id' => 'required|exists:academic_years,id',
+            'semester_id' => 'required|exists:semesters,id',
             'grade_id' => 'nullable|exists:grade_levels,id',
             'subject_id' => 'nullable|exists:subject,id',
             'total_marks' => 'required|numeric|min:1',
@@ -139,6 +154,7 @@ public function index(Request $request)
             'start_date',
             'end_date',
             'academic_year_id',
+            'semester_id',
             'grade_id',
             'subject_id',
             'total_marks',

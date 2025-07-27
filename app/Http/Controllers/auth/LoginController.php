@@ -74,6 +74,8 @@ public function login(Request $request)
                 return redirect()->route('superadmin.dashboard');
             case 'school_admin':
                 return redirect()->route('schooladmin.dashboard');
+            case 'school_creator':
+                return redirect()->route('schoolcreator.dashboard');
             case 'director':
                 return redirect()->route('director.dashboard');
             case 'manager':

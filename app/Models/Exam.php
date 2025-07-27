@@ -17,6 +17,7 @@ class Exam extends Model
         'start_date',
         'end_date',
         'academic_year_id',
+        'semester_id',
         'grade_id',
         'subject_id',
         'total_marks',
@@ -29,6 +30,10 @@ class Exam extends Model
     public function school()
     {
         return $this->belongsTo(School::class);
+    }
+    public function Semester()
+    {
+        return $this->belongsTo(Semester::class);
     }
 
     public function examType()

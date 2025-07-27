@@ -25,18 +25,36 @@
                 <li class="{{ request()->is('admin/schools*') ? 'active' : '' }}">
                     <a href="{{ route('superadmin.schools') }}">
                         <i class="fas fa-fw fa-university"></i>
-                        <span>Schools</span>
-                        <span class="badge bg-primary float-end">15</span>
+                        <span> All Schools</span>
                     </a>
                 </li>
                 
-                <li class="{{ request()->is('admin/users*') ? 'active' : '' }}">
-                    <a href="{{ route('superadmin.users') }}">
-                        <i class="fas fa-fw fa-users-cog"></i>
-                        <span>System Users</span>
-                        <span class="badge bg-info float-end">1245</span>
-                    </a>
-                </li>
+<li class="{{ request()->is('superadmin/users*') ? 'active' : '' }}">
+    <a href="{{ route('superadmin.users.index') }}">
+        <i class="fas fa-fw fa-users-cog"></i>
+        <span>System Users</span>
+    </a>
+</li>
+
+                            <li>
+                            <a href="{{ route('admin.password.reset.form') }}">
+                                <i class="fas fa-fw fa-users-cog"></i>
+                                <span>Password Management</span>
+                                <span class="badge bg-danger float-end">All Users</span>
+                            </a>
+                        </li>
+
+<!-- <div class="list-group mb-4">
+    <a href="{{ route('subscriptions.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('subscriptions.index') ? 'active' : '' }}">
+        All Subscriptions
+    </a>
+    <a href="{{ route('subscriptions.create') }}" class="list-group-item list-group-item-action {{ request()->routeIs('subscriptions.create') ? 'active' : '' }}">
+        Create Subscription
+    </a>
+    <a href="{{ route('subscription-categories.index') }}" class="list-group-item list-group-item-action">
+        Subscription Categories
+    </a>
+</div> -->
                 
                 <li class="{{ request()->is('admin/settings*') ? 'active' : '' }}">
                     <a href="#">
@@ -79,10 +97,81 @@
             </ul>
         @endif
 
+        @if(in_array(Auth::user()->role, ['super_admin','school_creator']))
+        <!-- School Management -->
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#schoolManagement">
+        <i class="fas fa-school me-2"></i> School Management
+    </a>
+    <div id="schoolManagement" class="collapse">
+        <ul class="nav flex-column ps-4">
+            <li><a href="{{ route('schools.index') }}" class="nav-link"><i class="fas fa-list me-1"></i> All Schools</a></li>
+            <li><a href="{{ route('schools.create') }}" class="nav-link"><i class="fas fa-plus me-1"></i> Create School</a></li>
+            <!-- <li><a href="{{ route('schools.data') }}" class="nav-link"><i class="fas fa-database me-1"></i> Schools Data API</a></li> -->
+        </ul>
+    </div>
+</li>
+        @endif
         <!-- School Admin Menu -->
-        @if(in_array(Auth::user()->role, ['school_admin', 'director', 'manager']))
+        @if(in_array(Auth::user()->role, ['school_admin', 'director', 'manager','academic_master']))
             <div class="px-3 py-2 text-uppercase small fw-bold text-muted">School Administration</div>
             
+            <!-- Student Management -->
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#studentManagement" aria-expanded="false">
+        <i class="fas fa-user-graduate me-2"></i> Student Management
+    </a>
+    <div id="studentManagement" class="collapse">
+        <ul class="nav flex-column ps-4">
+            <!-- Student List & Registration -->
+            <li>
+                <a href="{{ route('students.index') }}" class="nav-link">
+                    <i class="fas fa-users me-2"></i> Student List
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('students.create') }}" class="nav-link">
+                    <i class="fas fa-user-plus me-2"></i> Register Student
+                </a>
+            </li>
+
+            <!-- Parent Management -->
+            <li>
+                <a href="{{ route('student.parent.index') }}" class="nav-link">
+                    <i class="fas fa-user-friends me-2"></i> Parents
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('student-requirement-submissions.index') }}" class="nav-link">
+                    <i class="fas fa-upload me-2"></i> Requirement Submissions
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('student-requirement-submissions.create') }}" class="nav-link">
+                    <i class="fas fa-plus-circle me-2"></i> Add Requirement Submissions
+                </a>
+            </li>
+
+
+            <!-- Payments -->
+            <li>
+                <a href="{{ route('student-payments.index') }}" class="nav-link">
+                    <i class="fas fa-money-bill-wave me-2"></i> Student Payments
+                </a>
+            </li>
+
+            <!-- Export Students -->
+            <li>
+                <a href="{{ route('export.students') }}" class="nav-link">
+                    <i class="fas fa-file-export me-2"></i> Export Students
+                </a>
+            </li>
+
+        </ul>
+    </div>
+</li>
+
+
             <!-- User Management -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#userManagement">
@@ -95,6 +184,13 @@
                         <li><a href="{{ route('schools.staff.index') }}" class="nav-link"><i class="fas fa-users me-1"></i> Staff</a></li>
                         <li><a href="{{ route('student.parent.index') }}" class="nav-link"><i class="fas fa-user-tie me-1"></i> Parents</a></li>
                         <li><a href="{{ route('users.index') }}" class="nav-link"><i class="fas fa-users me-1"></i> All System Users</a></li>
+                            <li>
+                            <a href="{{ route('admin.password.reset.form') }}">
+                                <i class="fas fa-fw fa-users-cog"></i>
+                                <span>Password Management</span>
+                                <span class="badge bg-danger float-end">All Users</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>
@@ -108,11 +204,38 @@
                     <ul class="nav flex-column ps-4">
                         <li><a href="{{ route('academic-years.index') }}" class="nav-link"><i class="fas fa-calendar me-1"></i> Academic Years</a></li>
                         <li><a href="{{ route('semesters.index') }}" class="nav-link"><i class="fas fa-calendar-alt me-1"></i> Semesters</a></li>
-                        <li><a href="{{ route('grade-levels.index') }}" class="nav-link"><i class="fas fa-layer-group me-1"></i> Grade Levels</a></li>
+                        <li><a href="{{ route('grade-levels.index') }}" class="nav-link"><i class="fas fa-layer-group me-1"></i> Grade Levels/Form</a></li>
                         <li><a href="{{ route('classes.index') }}" class="nav-link"><i class="fas fa-school me-1"></i> Classes</a></li>
                         <li><a href="{{ route('sections.index') }}" class="nav-link"><i class="fas fa-object-group me-1"></i> Sections</a></li>
                         <li><a href="{{ route('subjects.index') }}" class="nav-link"><i class="fas fa-book me-1"></i> Subjects</a></li>
                         <li><a href="{{ route('rooms.index') }}" class="nav-link"><i class="fas fa-door-closed me-1"></i> Rooms</a></li>
+                        <li><a href="{{ route('grades.index') }}" class="nav-link"><i class="fas fa-chart-line me-1"></i> Grades Scores</a></li>
+                        <li><a href="{{ route('divisions.index') }}" class="nav-link"><i class="fas fa-chart-line me-1"></i>Divisions Settings</a></li>
+                    </ul>
+                </div>
+            </li>
+
+            
+            <!-- Academic Records -->
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#academicRecords">
+                    <i class="fas fa-book-open me-2"></i> Academic Records
+                </a>
+                <div id="academicRecords" class="collapse">
+                    <ul class="nav flex-column ps-4">
+                        <li><a href="{{ route('exam-types.index') }}" class="nav-link"><i class="fas fa-list-alt me-1"></i> Exam Types</a></li>
+                        <li><a href="{{ route('exams.index') }}" class="nav-link"><i class="fas fa-file-alt me-2"></i> Examinations</a></li>
+                        <li><a href="{{ route('student-examinations.index') }}" class="nav-link"><i class="fas fa-chart-line me-3"></i>Student Result Sheet</a></li>
+                        <li><a href="{{ route('exam-results.general') }}" class="nav-link"><i class="fas fa-file-alt me-3"></i>Genaral Exam Results</a></li>
+                        <li><a href="{{ route('exam-results.index') }}" class="nav-link"><i class="fas fa-file-alt me-3"></i>All Exam Results</a></li>
+                        
+                    <div class="px-3 py-2 text-uppercase small fw-bold text-muted">Assesments</div>
+                        <li><a href="{{ route('assessments.index') }}" class="nav-link"><i class="fas fa-clipboard-check me-1"></i> Assessments</a></li>
+                        <li><a href="{{ route('assessment-results.index') }}" class="nav-link"><i class="fas fa-clipboard-check me-1"></i> Assessments Results</a></li>
+
+                        <li><a href="{{ route('assignments.index') }}" class="nav-link"><i class="fas fa-tasks me-1"></i> Assignments</a></li>
+                        <li><a href="{{ route('submissions.index') }}" class="nav-link"><i class="fas fa-upload me-1"></i> Submissions</a></li>
+
                     </ul>
                 </div>
             </li>
@@ -136,27 +259,11 @@
                 </div>
             </li>
 
-            <!-- Academic Records -->
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#academicRecords">
-                    <i class="fas fa-book-open me-2"></i> Academic Records
-                </a>
-                <div id="academicRecords" class="collapse">
-                    <ul class="nav flex-column ps-4">
-                        <li><a href="{{ route('assignments.index') }}" class="nav-link"><i class="fas fa-tasks me-1"></i> Assignments</a></li>
-                        <li><a href="{{ route('submissions.index') }}" class="nav-link"><i class="fas fa-upload me-1"></i> Submissions</a></li>
-                        <li><a href="{{ route('assessments.index') }}" class="nav-link"><i class="fas fa-clipboard-check me-1"></i> Assessments</a></li>
-                        <li><a href="{{ route('exam-types.index') }}" class="nav-link"><i class="fas fa-list-alt me-1"></i> Exam Types</a></li>
-                        <li><a href="{{ route('grades.index') }}" class="nav-link"><i class="fas fa-chart-line me-1"></i> Grades</a></li>
-                        <li><a href="{{ route('exam-results.general') }}" class="nav-link">All Exam Results</a></li>
-                    </ul>
-                </div>
-            </li>
 
             <!-- Fee Management -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#feeManagement">
-                    <i class="fas fa-money-bill-wave me-2"></i> Fee Management
+                    <i class="fas fa-money-bill-wave me-2"></i> Fee Payment Management
                 </a>
                 <div id="feeManagement" class="collapse">
                     <ul class="nav flex-column ps-4">
@@ -167,6 +274,29 @@
                     </ul>
                 </div>
             </li>
+            <!-- Fee Management -->
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#studentrequirement">
+                    <i class="fas fa-money-bill-wave me-2"></i> Student Requirement Management
+                </a>
+                <div id="studentrequirement" class="collapse">
+                    <ul class="nav flex-column ps-4">
+                        <li><a href="{{ route('student-requirements.index') }}" class="nav-link"><i class="fas fa-clipboard-list me-2"></i> Student Requirements</a> </li>
+             <li>
+        <a href="{{ route('student-requirement-submissions.index') }}" class="nav-link">
+            <i class="fas fa-check-circle me-2"></i> Requirement Submissions
+        </a>
+    </li>
+    <li>
+        <a href="{{ route('student-requirement-submissions.create') }}" class="nav-link">
+            <i class="fas fa-plus-circle me-2"></i> Add Submission
+        </a>
+    </li>
+</ul>
+
+                </div>
+            </li>
+
 
             <!-- Hostel Management -->
             <li class="nav-item dropdown">
@@ -230,17 +360,19 @@
                 </a>
             </li>
 
+
+
             <li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#exportManagement">
         <i class="fas fa-file-export me-2"></i> Export options
     </a>
     <div id="exportManagement" class="collapse">
         <ul class="nav flex-column ps-4">
-            <li><a href="#" class="nav-link"><i class="fas fa-users me-1"></i> User Export</a></li>
-            <li><a href="#" class="nav-link"><i class="fas fa-user-graduate me-1"></i> Students Export</a></li>
-            <li><a href="#" class="nav-link"><i class="fas fa-chalkboard-teacher me-1"></i> Teachers Export</a></li>
-            <li><a href="#" class="nav-link"><i class="fas fa-user-tie me-1"></i> Staff Export</a></li>
-            <li><a href="#" class="nav-link"><i class="fas fa-user-friends me-1"></i> Parents Export</a></li>
+<li><a href="{{ route('school.export.users') }}" class="nav-link"><i class="fas fa-users me-1"></i> User Export</a></li>
+<li><a href="{{ route('school.export.students') }}" class="nav-link"><i class="fas fa-user-graduate me-1"></i> Students Export</a></li>
+<li><a href="{{ route('school.export.teachers') }}" class="nav-link"><i class="fas fa-chalkboard-teacher me-1"></i> Teachers Export</a></li>
+<li><a href="{{ route('school.export.staff') }}" class="nav-link"><i class="fas fa-user-tie me-1"></i> Staff Export</a></li>
+<li><a href="{{ route('school.export.parents') }}" class="nav-link"><i class="fas fa-user-friends me-1"></i> Parents Export</a></li>
             <li><a href="#" class="nav-link"><i class="fas fa-calendar-week me-1"></i> TimeTable Export</a></li>
             <li><a href="#" class="nav-link"><i class="fas fa-money-bill-wave me-1"></i> Fee Payment Export</a></li>
             <li><a href="#" class="nav-link"><i class="fas fa-building me-1"></i> Student Hostel Export</a></li>
@@ -278,6 +410,7 @@
                 <li><a href="{{ route('timetables.index') }}" class="nav-link"><i class="fas fa-calendar-alt me-2"></i> Timetables</a></li>
                 <li><a href="{{ route('exams.index') }}" class="nav-link"><i class="fas fa-file-alt me-2"></i> Examinations</a></li>
 
+                <li><a href="{{ route('exams.index') }}" class="nav-link"><i class="fas fa-file-alt me-2"></i> Examinations</a></li>
 
 
                 <li><a href="{{ route('assignments.index') }}" class="nav-link"><i class="fas fa-tasks me-2"></i> Assignments</a></li>
@@ -413,5 +546,110 @@
 
         @endif
 
+
+        @if(Auth::user()->role === 'super_admin')
+    <div class="px-3 py-2 text-uppercase small fw-bold text-muted">Super Admin</div>
+    <ul class="list-unstyled">
+        <!-- Admin Password Management -->
+        <li class="mt-2 {{ request()->is('admin/password-reset*') ? 'active' : '' }}">
+            <a href="{{ route('admin.password.reset.form') }}">
+                <i class="fas fa-key me-2"></i>
+                <span>Reset Admin Password</span>
+            </a>
+        </li>
+
+
+        <!-- Personal Profile / Change Password -->
+        <li class="mt-2 {{ request()->is('profile') ? 'active' : '' }}">
+            <a href="{{ route('profile.index') }}">
+                <i class="fas fa-user me-2"></i>
+                <span>My Profile</span>
+            </a>
+        </li>
+        <li class="{{ request()->is('change-password') ? 'active' : '' }}">
+            <a href="{{ route('password.change.form') }}">
+                <i class="fas fa-lock me-2"></i>
+                <span>Change My Password</span>
+            </a>
+        </li>
+
+    </ul>
+
+    <li class="{{ request()->is('admin/password-reset*') ? 'active' : '' }}">
+                            <a href="{{ route('admin.password.reset.form') }}">
+                                <i class="fas fa-fw fa-users-cog"></i>
+                                <span>Password Management</span>
+                                <span class="badge bg-danger float-end">All Users</span>
+                            </a>
+                        </li>
+@endif
+
+
+
+        <!-- Personal Profile / Change Password -->
+        <li class="mt-2 {{ request()->is('profile') ? 'active' : '' }}">
+            <a href="{{ route('profile.index') }}">
+                <i class="fas fa-user me-2"></i>
+                <span>My Profile</span>
+            </a>
+        </li>
+        <li class="{{ request()->is('change-password') ? 'active' : '' }}">
+            <a href="{{ route('password.change.form') }}">
+                <i class="fas fa-lock me-2"></i>
+                <span>Change My Password</span>
+            </a>
+        </li>
+
     </div>
 </aside>
+
+
+<!-- 
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#paymentManagement">
+        <i class="fas fa-money-bill-wave me-2"></i> Payment Management
+    </a>
+    <div id="paymentManagement" class="collapse">
+        <ul class="nav flex-column ps-4">
+            <li><a href="{{ route('payment.categories.index') }}" class="nav-link"><i class="fas fa-tags me-1"></i> Payment Categories</a></li>
+            <li><a href="{{ route('student-payments.index') }}" class="nav-link"><i class="fas fa-users me-1"></i> Student Payments</a></li>
+            <li><a href="{{ route('michango.index') }}" class="nav-link"><i class="fas fa-hands-helping me-1"></i> Michango</a></li>
+            <li><a href="{{ route('payment-reports.index') }}" class="nav-link"><i class="fas fa-chart-bar me-1"></i> Payment Reports</a></li>
+            <li><a href="{{ route('payment-settings.index') }}" class="nav-link"><i class="fas fa-cog me-1"></i> Payment Settings</a></li>
+        </ul>
+    </div>
+</li>
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#paymentReports">
+        <i class="fas fa-chart-line me-2"></i> Payment Reports
+    </a>
+    <div id="paymentReports" class="collapse">
+        <ul class="nav flex-column ps-4">
+            <li><a href="{{ route('payment-reports.school-summary') }}" class="nav-link"><i class="fas fa-school me-1"></i> School Summary</a></li>
+            <li><a href="{{ route('payment-reports.grade-analysis') }}" class="nav-link"><i class="fas fa-graduation-cap me-1"></i> Grade Analysis</a></li>
+            <li><a href="{{ route('payment-reports.payment-methods') }}" class="nav-link"><i class="fas fa-credit-card me-1"></i> Payment Methods</a></li>
+            <li><a href="{{ route('payment-reports.overdue-payments') }}" class="nav-link"><i class="fas fa-exclamation-triangle me-1"></i> Overdue Payments</a></li>
+            <li><a href="{{ route('payment-reports.michango-progress') }}" class="nav-link"><i class="fas fa-progress-bar me-1"></i> Michango Progress</a></li>
+            <li><a href="{{ route('payment-reports.daily-collections') }}" class="nav-link"><i class="fas fa-calendar-day me-1"></i> Daily Collections</a></li>
+        </ul>
+    </div>
+</li>
+
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#bulkOperations">
+        <i class="fas fa-tasks me-2"></i> Bulk Operations
+    </a>
+    <div id="bulkOperations" class="collapse">
+        <ul class="nav flex-column ps-4">
+            <li><a href="#" onclick="showBulkModal('generate-requirements')" class="nav-link"><i class="fas fa-file-invoice me-1"></i> Generate Requirements</a></li>
+            <li><a href="#" onclick="showBulkModal('update-amounts')" class="nav-link"><i class="fas fa-edit me-1"></i> Update Amounts</a></li>
+            <li><a href="#" onclick="showBulkModal('send-reminders')" class="nav-link"><i class="fas fa-envelope me-1"></i> Send Reminders</a></li>
+            <li><a href="#" onclick="showBulkModal('apply-late-fees')" class="nav-link"><i class="fas fa-clock me-1"></i> Apply Late Fees</a></li>
+            <li><a href="#" onclick="showBulkModal('waive-payments')" class="nav-link"><i class="fas fa-hand-paper me-1"></i> Waive Payments</a></li>
+        </ul>
+    </div>
+</li>
+-->

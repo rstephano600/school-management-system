@@ -14,6 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
          $middleware->alias([
         'role' => \App\Http\Middleware\RoleMiddleware::class,
+        'super_admin' => \App\Http\Middleware\EnsureUserIsSuperAdmin::class,
+        'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
+        'auth' => \App\Http\Middleware\Authenticate::class,
           ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

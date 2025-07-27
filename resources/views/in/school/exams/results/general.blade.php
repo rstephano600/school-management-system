@@ -16,6 +16,22 @@
             </select>
         </div>
         <div class="col-md-3">
+            <select name="semester_id" class="form-select">
+                <option value="">All Semester</option>
+                @foreach($semesters as $semester)
+                    <option value="{{ $semester->id }}" {{ request('semester_id') == $semester->id ? 'selected' : '' }}>{{ $semester->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="exam_type_id" class="form-select">
+                <option value="">All Semester</option>
+                @foreach($examTypes as $semester)
+                    <option value="{{ $semester->id }}" {{ request('exam_type_id') == $semester->id ? 'selected' : '' }}>{{ $semester->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-3">
             <select name="grade_id" class="form-select">
                 <option value="">All Grades</option>
                 @foreach($grades as $grade)

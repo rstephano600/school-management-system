@@ -50,6 +50,16 @@ Route::get('/import/file', [UsersController::class, 'showimport'])->name('import
 Route::get('/export', [UsersController::class, 'export'])->name('export.user');
 Route::post('/import', [UsersController::class, 'import'])->name('import.user');
 
+Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('superadmin.')->group(function () {
+
+    Route::resource('users', UsersController::class);
+
+    Route::get('users-import', [UsersController::class, 'showimport'])->name('users.import');
+    Route::post('users-import', [UsersController::class, 'import'])->name('users.import.post');
+    Route::get('users-export', [UsersController::class, 'export'])->name('users.export');
+});
+
+
 // DASHBOARD
 Route::get('/admin/dashboard', function () {
 
@@ -62,6 +72,7 @@ Route::get('/dashboard', function () {
     return match ($user->role) {
         'super_admin' => redirect()->route('superadmin.dashboard'),
         'school_admin' => redirect()->route('schooladmin.dashboard'),
+        'school_creator' => redirect()->route('schoolcreator.dashboard'),
         'director' => redirect()->route('director.dashboard'),
         'manager' => redirect()->route('manager.dashboard'),
         'head_master' => redirect()->route('headmaster.dashboard'),
@@ -145,12 +156,8 @@ Route::middleware(['auth', 'role:super_admin'])
         Route::post('/delete/schools', [SchoolController::class, 'destroy'])->name('schools.destroy');
         Route::get('/schools/{school}', [SchoolController::class, 'show'])->name('schools.show');
 
-
         // USERS
-        Route::get('/system-users', [UsersController::class, 'index'])->name('users');
-        Route::get('/create/User', [UsersController::class, 'create'])->name('users.create');
-        Route::get('/edit/User', [UsersController::class, 'edit'])->name('users.edit');
-        Route::get('/destroy/User', [UsersController::class, 'destroy'])->name('users.destroy');
+
         Route::get('/schools/{school}/register-user', [SchoolUserController::class, 'create'])->name('schools.users.create');
         Route::post('/schools/{school}/register-user', [SchoolUserController::class, 'store'])->name('schools.users.store');
         Route::get('/schools/{school}/users', [SchoolController::class, 'showUsers'])->name('schools.users');
@@ -626,6 +633,53 @@ Route::middleware(['auth'])->group(function () {
     Route::post('exam-results/import/{exam}', [ExamResultController::class, 'import'])->name('exam-results.import');
 });
 
+Route::middleware(['auth'])->prefix('school')->group(function () {
+
+    // Exams CRUD
+    Route::resource('exams', ExamController::class);
+
+    // Exam Results
+    Route::get('exams/{exam}/results', [ExamResultController::class, 'index'])
+        ->name('exams.results.index'); // View & enter results
+
+    Route::post('exams/{exam}/results', [ExamResultController::class, 'store'])
+        ->name('exams.results.store'); // Submit results
+
+    Route::post('exams/{exam}/results/publish', [ExamResultController::class, 'publish'])
+        ->name('exams.results.publish'); // Optional: publish results
+
+    // Route::get('exams/the/{exam}/results', [ExamResultController::class, 'examresult'])->name('exam-results.index');
+});
+Route::middleware(['auth'])->prefix('exam-results')->name('exam-results.')->group(function () {
+    // Main listing page with filters and search
+    Route::get('/', [ExamResultController::class, 'index'])->name('index');
+    
+    // Show individual result details
+    Route::get('/{id}', [ExamResultController::class, 'show'])->name('show');
+    
+    // Student exam history
+    Route::get('/student/{studentId}/history', [ExamResultController::class, 'studentHistory'])->name('student-history');
+    
+    // AJAX route to get semesters based on academic year
+    Route::get('/ajax/semesters', [ExamResultController::class, 'getSemesters'])->name('get-semesters');
+    
+    // Export routes
+    Route::post('/export', [ExamResultController::class, 'export'])->name('export');
+});
+
+
+Route::middleware(['auth'])->prefix('school')->group(function () {
+    Route::get('exams/results', [ExamResultController::class, 'index'])->name('generalexam-results.index');
+});
+
+
+Route::middleware(['auth'])->prefix('school')->group(function () {
+    Route::get('exam-results/general', [ExamResultController::class, 'generalResults'])
+        ->name('exam-results.general');
+});
+Route::get('exam-results/print', [ExamResultController::class, 'print'])->name('exam-results.print');
+Route::get('exam-results/Export/Excel', [ExamResultController::class, 'export'])->name('exam-results.export');
+
 
 use App\Http\Controllers\StudentGradeLevelController;
 
@@ -672,7 +726,7 @@ Route::middleware(['auth'])->group(function () {
 // routes/web.php
 
 use App\Http\Controllers\School\AssessmentController;
-use App\Http\Controllers\School\AssessmentResultController;
+// use App\Http\Controllers\School\AssessmentResultController;
 
 Route::middleware(['auth'])->prefix('school')->name('assessments.')->group(function () {
     Route::get('assessments', [AssessmentController::class, 'index'])->name('index');
@@ -685,40 +739,31 @@ Route::middleware(['auth'])->prefix('school')->name('assessments.')->group(funct
 });
 
 
+use App\Http\Controllers\AssessmentResultController;
+
+// Assessment Results Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/assessment-results', [AssessmentResultController::class, 'index'])
+        ->name('assessment-results.index');
+    
+    Route::get('/assessment-results/{id}', [AssessmentResultController::class, 'show'])
+        ->name('assessment-results.show');
+    
+    Route::get('/assessment-results/export', [AssessmentResultController::class, 'export'])
+        ->name('assessment-results.export');
+    
+    Route::get('/assessment-results/{id}/print', [AssessmentResultController::class, 'print'])
+        ->name('assessment-results.print');
+});
+
+
 Route::get('assessments/{assessment}/results', [AssessmentResultController::class, 'index'])->name('assessments.results.index');
 Route::post('assessments/{assessment}/results', [AssessmentResultController::class, 'store'])->name('assessments.results.store');
 Route::get('students/{student}/assessment-summary', [AssessmentResultController::class, 'summary'])
     ->name('students.assessments.summary');
 
 
-Route::middleware(['auth'])->prefix('school')->group(function () {
 
-    // Exams CRUD
-    Route::resource('exams', ExamController::class);
-
-    // Exam Results
-    Route::get('exams/{exam}/results', [ExamResultController::class, 'index'])
-        ->name('exams.results.index'); // View & enter results
-
-    Route::post('exams/{exam}/results', [ExamResultController::class, 'store'])
-        ->name('exams.results.store'); // Submit results
-
-    Route::post('exams/{exam}/results/publish', [ExamResultController::class, 'publish'])
-        ->name('exams.results.publish'); // Optional: publish results
-
-    Route::get('exams/the/{exam}/results', [ExamResultController::class, 'examresult'])
-    ->name('exam-results.index');
-});
-
-
-
-
-Route::middleware(['auth'])->prefix('school')->group(function () {
-    Route::get('exam-results/general', [ExamResultController::class, 'generalResults'])
-        ->name('exam-results.general');
-});
-Route::get('exam-results/print', [ExamResultController::class, 'print'])->name('exam-results.print');
-Route::get('exam-results/Export/Excel', [ExamResultController::class, 'export'])->name('exam-results.export');
 
 
 
@@ -769,3 +814,309 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/Students/exportStudents', [UserExportController::class, 'exportStudents'])->name('export.exportStudents');
 
 });
+
+
+use App\Http\Controllers\school\ExportController;
+
+Route::middleware(['auth'])->prefix('school')->name('school.')->group(function () {
+    
+    // Export Routes Group
+    Route::prefix('export')->name('export.')->group(function () {
+        
+        // Students Export
+        Route::get('/students', [App\Http\Controllers\School\ExportController::class, 'students'])
+            ->name('students')
+            ->middleware('can:viewAny,App\Models\Student');
+        
+        Route::post('/students/export', [App\Http\Controllers\School\ExportController::class, 'exportStudents'])
+            ->name('students.export')
+            ->middleware('can:viewAny,App\Models\Student');
+        
+        // Teachers Export
+        Route::get('/teachers', [App\Http\Controllers\School\ExportController::class, 'teachers'])
+            ->name('teachers')
+            ->middleware('can:viewAny,App\Models\Teacher');
+        
+        Route::post('/teachers/export', [App\Http\Controllers\School\ExportController::class, 'exportTeachers'])
+            ->name('teachers.export')
+            ->middleware('can:viewAny,App\Models\Teacher');
+        
+        // Staff Export
+        Route::get('/staff', [App\Http\Controllers\School\ExportController::class, 'staff'])
+            ->name('staff')
+            ->middleware('can:viewAny,App\Models\Staff');
+        
+        Route::post('/staff/export', [App\Http\Controllers\School\ExportController::class, 'exportStaff'])
+            ->name('staff.export')
+            ->middleware('can:viewAny,App\Models\Staff');
+        
+        // Parents Export
+        Route::get('/parents', [App\Http\Controllers\School\ExportController::class, 'parents'])
+            ->name('parents')
+            ->middleware('can:viewAny,App\Models\Parents');
+        
+        Route::post('/parents/export', [App\Http\Controllers\School\ExportController::class, 'exportParents'])
+            ->name('parents.export')
+            ->middleware('can:viewAny,App\Models\Parents');
+        
+        // All Users Export
+        Route::get('/users', [App\Http\Controllers\School\ExportController::class, 'users'])
+            ->name('users');
+            // ->middleware('can:viewAny,App\Models\User');
+        
+        Route::post('/users/export', [App\Http\Controllers\School\ExportController::class, 'exportUsers'])
+            ->name('users.export');
+            // ->middleware('can:viewAny,App\Models\User');
+    });
+});
+
+
+
+use App\Http\Controllers\PaymentCategoryController;
+use App\Http\Controllers\StudentPaymentController;
+use App\Http\Controllers\MichangoController;
+use App\Http\Controllers\PaymentReportController;
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    
+    // Payment Categories Management
+    Route::prefix('payment/categories')->name('payment.categories.')->group(function () {
+        Route::get('/', [PaymentCategoryController::class, 'index'])->name('index');
+        Route::get('/create', [PaymentCategoryController::class, 'create'])->name('create');
+        Route::post('/', [PaymentCategoryController::class, 'store'])->name('store');
+        Route::get('/{paymentCategory}', [PaymentCategoryController::class, 'show'])->name('show');
+        Route::get('/{paymentCategory}/edit', [PaymentCategoryController::class, 'edit'])->name('edit');
+        Route::put('/{paymentCategory}', [PaymentCategoryController::class, 'update'])->name('update');
+        Route::delete('/{paymentCategory}', [PaymentCategoryController::class, 'destroy'])->name('destroy');
+        
+        // Grade Level Fee Setup
+        Route::get('/{paymentCategory}/setup-fees', [PaymentCategoryController::class, 'setupGradeFees'])->name('setup-fees');
+        Route::post('/{paymentCategory}/setup-fees', [PaymentCategoryController::class, 'storeGradeFees'])->name('store-fees');
+        
+        // AJAX Routes
+        Route::get('/api/common', [PaymentCategoryController::class, 'getCommonCategories'])->name('api.common');
+        Route::get('/api/active', [PaymentCategoryController::class, 'getActiveCategories'])->name('api.active');
+        Route::post('/api/bulk-toggle-status', [PaymentCategoryController::class, 'bulkToggleStatus'])->name('api.bulk-toggle');
+    });
+
+    // Student Payments Management
+    Route::prefix('student-payments')->name('student-payments.')->group(function () {
+        Route::get('/', [StudentPaymentController::class, 'index'])->name('index');
+        Route::get('/{student}', [StudentPaymentController::class, 'show'])->name('show');
+        Route::get('/{student}/history', [StudentPaymentController::class, 'paymentHistory'])->name('history');
+        
+        // Payment Recording
+        Route::post('/{student}/record-payment', [StudentPaymentController::class, 'recordPayment'])->name('record-payment');
+        Route::post('/{student}/record-michango', [StudentPaymentController::class, 'recordMichangoPayment'])->name('record-michango');
+        
+        // Requirement Generation
+        Route::post('/generate-requirements', [StudentPaymentController::class, 'generateRequirements'])->name('generate-requirements');
+        Route::post('/bulk-generate-requirements', [StudentPaymentController::class, 'bulkGenerateRequirements'])->name('bulk-generate-requirements');
+        
+        // AJAX Routes
+        Route::get('/{student}/payment-categories', [StudentPaymentController::class, 'getStudentPaymentCategories'])->name('api.categories');
+        Route::get('/export', [StudentPaymentController::class, 'exportPayments'])->name('export');
+    });
+
+    // Michango (Contributions) Management
+    Route::prefix('michango')->name('michango.')->group(function () {
+        Route::get('/', [MichangoController::class, 'index'])->name('index');
+        Route::get('/create', [MichangoController::class, 'create'])->name('create');
+        Route::post('/', [MichangoController::class, 'store'])->name('store');
+        Route::get('/{michangoCategory}', [MichangoController::class, 'show'])->name('show');
+        Route::get('/{michangoCategory}/edit', [MichangoController::class, 'edit'])->name('edit');
+        Route::put('/{michangoCategory}', [MichangoController::class, 'update'])->name('update');
+        Route::delete('/{michangoCategory}', [MichangoController::class, 'destroy'])->name('destroy');
+        
+        // Student Michango Management
+        Route::get('/{michangoCategory}/students', [MichangoController::class, 'showStudents'])->name('students');
+        Route::post('/{michangoCategory}/set-pledge', [MichangoController::class, 'setPledge'])->name('set-pledge');
+        Route::get('/{michangoCategory}/contributions-report', [MichangoController::class, 'contributionsReport'])->name('contributions-report');
+        
+        // AJAX Routes
+        Route::get('/api/active', [MichangoController::class, 'getActiveMichango'])->name('api.active');
+        Route::post('/api/bulk-set-pledges', [MichangoController::class, 'bulkSetPledges'])->name('api.bulk-pledges');
+    });
+
+    // Payment Reports
+    Route::prefix('payment-reports')->name('payment-reports.')->group(function () {
+        Route::get('/', [PaymentReportController::class, 'index'])->name('index');
+        Route::get('/school-summary', [PaymentReportController::class, 'schoolSummary'])->name('school-summary');
+        Route::get('/grade-analysis', [PaymentReportController::class, 'gradeAnalysis'])->name('grade-analysis');
+        Route::get('/payment-methods', [PaymentReportController::class, 'paymentMethods'])->name('payment-methods');
+        Route::get('/overdue-payments', [PaymentReportController::class, 'overduePayments'])->name('overdue-payments');
+        Route::get('/michango-progress', [PaymentReportController::class, 'michangoProgress'])->name('michango-progress');
+        Route::get('/daily-collections', [PaymentReportController::class, 'dailyCollections'])->name('daily-collections');
+        
+        // Export Routes
+        Route::get('/export/school-summary', [PaymentReportController::class, 'exportSchoolSummary'])->name('export.school-summary');
+        Route::get('/export/grade-analysis', [PaymentReportController::class, 'exportGradeAnalysis'])->name('export.grade-analysis');
+        Route::get('/export/overdue-payments', [PaymentReportController::class, 'exportOverduePayments'])->name('export.overdue-payments');
+        Route::get('/export/daily-collections', [PaymentReportController::class, 'exportDailyCollections'])->name('export.daily-collections');
+    });
+
+    // Payment Receipts
+    Route::prefix('payment-receipts')->name('payment-receipts.')->group(function () {
+        Route::get('/{studentPayment}', [PaymentReceiptController::class, 'show'])->name('show');
+        Route::get('/{studentPayment}/pdf', [PaymentReceiptController::class, 'generatePDF'])->name('pdf');
+        Route::get('/{studentPayment}/print', [PaymentReceiptController::class, 'printReceipt'])->name('print');
+        Route::post('/{studentPayment}/email', [PaymentReceiptController::class, 'emailReceipt'])->name('email');
+    });
+
+    // Bulk Operations
+    Route::prefix('bulk-operations')->name('bulk-operations.')->group(function () {
+        Route::post('/generate-requirements', [BulkOperationController::class, 'generateRequirements'])->name('generate-requirements');
+        Route::post('/update-amounts', [BulkOperationController::class, 'updateAmounts'])->name('update-amounts');
+        Route::post('/send-reminders', [BulkOperationController::class, 'sendPaymentReminders'])->name('send-reminders');
+        Route::post('/apply-late-fees', [BulkOperationController::class, 'applyLateFees'])->name('apply-late-fees');
+        Route::post('/waive-payments', [BulkOperationController::class, 'waivePayments'])->name('waive-payments');
+    });
+
+    // Payment Settings
+    Route::prefix('payment-settings')->name('payment-settings.')->group(function () {
+        Route::get('/', [PaymentSettingsController::class, 'index'])->name('index');
+        Route::post('/update', [PaymentSettingsController::class, 'update'])->name('update');
+        Route::post('/reset', [PaymentSettingsController::class, 'reset'])->name('reset');
+    });
+});
+
+// API Routes for mobile app or external integrations
+Route::prefix('api/v1')->middleware(['auth:sanctum'])->group(function () {
+    
+    // Student Payment API
+    Route::get('/students/{student}/payments', [Api\StudentPaymentApiController::class, 'index']);
+    Route::get('/students/{student}/payment-summary', [Api\StudentPaymentApiController::class, 'summary']);
+    Route::post('/students/{student}/payments', [Api\StudentPaymentApiController::class, 'store']);
+    
+    // Payment Categories API
+    Route::get('/payment-categories', [Api\PaymentCategoryApiController::class, 'index']);
+    Route::get('/payment-categories/{category}/fees', [Api\PaymentCategoryApiController::class, 'fees']);
+    
+    // Michango API
+    Route::get('/michango', [Api\MichangoApiController::class, 'index']);
+    Route::get('/michango/{category}/contributions', [Api\MichangoApiController::class, 'contributions']);
+    Route::post('/michango/{category}/contribute', [Api\MichangoApiController::class, 'contribute']);
+    
+    // Payment Reports API
+    Route::get('/payment-reports/dashboard', [Api\PaymentReportApiController::class, 'dashboard']);
+    Route::get('/payment-reports/summary', [Api\PaymentReportApiController::class, 'summary']);
+});
+
+// Webhook Routes for payment gateways (if using online payments)
+Route::prefix('webhooks')->name('webhooks.')->group(function () {
+    Route::post('/mobile-money/callback', [WebhookController::class, 'mobileMoneyCallback'])->name('mobile-money');
+    Route::post('/bank-transfer/callback', [WebhookController::class, 'bankTransferCallback'])->name('bank-transfer');
+    Route::post('/card-payment/callback', [WebhookController::class, 'cardPaymentCallback'])->name('card-payment');
+});
+
+// Public routes for payment verification (no auth required)
+Route::prefix('payments/verify')->name('payments.verify.')->group(function () {
+    Route::get('/{reference}', [PaymentVerificationController::class, 'verify'])->name('reference');
+    Route::post('/receipt-lookup', [PaymentVerificationController::class, 'receiptLookup'])->name('receipt-lookup');
+});
+
+
+use App\Http\Controllers\StudentRequirementController;
+
+Route::prefix('student-requirements')->name('student-requirements.')->group(function () {
+    Route::get('/', [StudentRequirementController::class, 'index'])->name('index');
+    Route::get('/create', [StudentRequirementController::class, 'create'])->name('create');
+    Route::post('/', [StudentRequirementController::class, 'store'])->name('store');
+    Route::get('/{id}/edit', [StudentRequirementController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [StudentRequirementController::class, 'update'])->name('update');
+    Route::delete('/{id}', [StudentRequirementController::class, 'destroy'])->name('destroy');
+});
+
+use App\Http\Controllers\StudentRequirementSubmissionController;
+
+Route::prefix('student-requirement-submissions')->name('student-requirement-submissions.')->group(function () {
+    Route::get('/', [StudentRequirementSubmissionController::class, 'index'])->name('index');
+    Route::get('/create', [StudentRequirementSubmissionController::class, 'create'])->name('create');
+    Route::post('/', [StudentRequirementSubmissionController::class, 'store'])->name('store');
+    Route::get('/{id}/edit', [StudentRequirementSubmissionController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [StudentRequirementSubmissionController::class, 'update'])->name('update');
+    Route::delete('/{id}', [StudentRequirementSubmissionController::class, 'destroy'])->name('destroy');
+});
+
+
+
+
+// Add these routes to your existing routes/web.php file
+
+use App\Http\Controllers\SchoolController as CreatorSchoolController;
+
+// School management routes
+Route::group(['prefix' => 'schools'], function () {
+    Route::get('/', [CreatorSchoolController::class, 'index'])->name('schools.index');
+    Route::get('/create', [CreatorSchoolController::class, 'create'])->name('schools.create');
+    Route::post('/', [CreatorSchoolController::class, 'store'])->name('schools.store');
+    Route::get('/{school}', [CreatorSchoolController::class, 'show'])->name('schools.show');
+    Route::get('/{school}/edit', [CreatorSchoolController::class, 'edit'])->name('schools.edit');
+    Route::put('/{school}', [CreatorSchoolController::class, 'update'])->name('schools.update');
+    Route::delete('/{school}', [CreatorSchoolController::class, 'destroy'])->name('schools.destroy');
+    Route::patch('/{school}/toggle-status', [CreatorSchoolController::class, 'toggleStatus'])->name('schools.toggle-status');
+    Route::get('/api/data', [CreatorSchoolController::class, 'getData'])->name('schools.data');
+});
+
+// School Creator Dashboard Route (add this to your existing dashboard routes)
+Route::get('/school-creator/dashboard', function () {
+    if (!auth()->check() || auth()->user()->role !== 'school_creator') {
+        abort(403, 'Unauthorized access');
+    }
+    
+    return view('in.school-creator.dashboard');
+})->name('schoolcreator.dashboard');
+
+use App\Http\Controllers\SubscriptionController;
+Route::middleware(['auth', 'role:super_admin'])->group(function () {
+    Route::resource('subscriptions', SubscriptionController::class);
+});
+use App\Http\Controllers\SubscriptionCategoryController;
+
+Route::resource('subscription-categories', SubscriptionCategoryController::class);
+
+
+
+use App\Http\Controllers\auth\PasswordController;
+
+Route::middleware(['auth'])->group(function () {
+    
+    // User's own password change routes
+    Route::get('/change-password', [PasswordController::class, 'showChangePasswordForm'])
+        ->name('password.change.form');
+    Route::post('/change-password', [PasswordController::class, 'changePassword'])
+        ->name('password.change');
+    
+    // User profile route
+    Route::get('/profile', [PasswordController::class, 'showProfile'])
+        ->name('profile.index');
+    
+    // Admin password reset routes (for super_admin and school_admin)
+    Route::middleware(['role:super_admin,school_admin'])->group(function () {
+        Route::get('/admin/password-reset', [PasswordController::class, 'showAdminResetForm'])
+            ->name('admin.password.reset.form');
+        Route::post('/admin/password-reset', [PasswordController::class, 'adminResetPassword'])
+            ->name('admin.password.reset');
+        Route::post('/admin/bulk-password-reset', [PasswordController::class, 'bulkResetPassword'])
+            ->name('admin.password.bulk.reset');
+        Route::get('/admin/generate-password', [PasswordController::class, 'generatePassword'])
+            ->name('admin.password.generate');
+        Route::get('/admin/users-for-reset', [PasswordController::class, 'getUsersForReset'])
+            ->name('admin.users.for.reset');
+    });
+});
+
+use App\Http\Controllers\StudentAllExaminationController;
+
+// Student Examination Results Routes
+Route::middleware(['auth'])->group(function () {
+    Route::prefix('student-examinations')->name('student-examinations.')->group(function () {
+        Route::get('/', [StudentAllExaminationController::class, 'index'])->name('index');
+        Route::get('/show/{id}', [StudentAllExaminationController::class, 'show'])->name('show');
+        Route::get('/export', [StudentAllExaminationController::class, 'export'])->name('export');
+        Route::get('/analytics', [StudentAllExaminationController::class, 'analytics'])->name('analytics');
+    });
+});
+
+// Note: You'll need to create a custom middleware for role checking
+// Create app/Http/Middleware/CheckRole.php and register it in bootstrap/app.php

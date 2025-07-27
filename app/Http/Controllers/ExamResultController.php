@@ -3,153 +3,322 @@
 namespace App\Http\Controllers;
 
 use App\Models\ExamResult;
-use App\Models\Exam;
-use App\Models\Grade;
+use App\Models\AcademicYear;
+use App\Models\Semester;
+use App\Models\ExamType;
+use App\Models\GradeLevel;
+use App\Models\Subject;
 use App\Models\Student;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Imports\ExamResultsImport;
-use Maatwebsite\Excel\Concerns\ToCollection;
-use Maatwebsite\Excel\Concerns\WithHeadingRow; // optional, if you're using headings
-use Maatwebsite\Excel\Facades\Excel;
-use App\Imports\StudentsImport;
-use App\Exports\GeneralExamResultsExport;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ExamResultsExport;
 
 class ExamResultController extends Controller
 {
-        public function index($examId, Request $request)
-{
-    $exam = Exam::with(['grade', 'subject'])->findOrFail($examId);
+    /**
+     * Display examination results with filtering and search
+     */
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        $schoolId = $user->school_id;
 
-    $students = Student::with('user')
-        ->where('school_id', $exam->school_id)
-        ->where('grade_id', $exam->grade_id)
-        ->when($request->search, function ($q, $search) {
-            $q->where('admission_number', 'like', "%{$search}%")
-              ->orWhereHas('user', fn($u) => $u->where('name', 'like', "%{$search}%"));
+        // Get filter options
+        $academicYears = AcademicYear::where('school_id', $schoolId)
+            ->orderBy('start_date', 'desc')
+            ->get();
+
+        $semesters = collect();
+        $examTypes = ExamType::where('school_id', $schoolId)->get();
+        $gradeLevels = GradeLevel::where('school_id', $schoolId)->get();
+        $subjects = Subject::where('school_id', $schoolId)->get();
+
+        // Get semesters based on selected academic year
+        if ($request->filled('academic_year_id')) {
+            $semesters = Semester::where('academic_year_id', $request->academic_year_id)
+                ->orderBy('start_date')
+                ->get();
+        }
+
+        // Build query for exam results
+        $query = ExamResult::with([
+            'student.user',
+            'student.grade',
+            'student.section',
+            'exam.academicYear',
+            'exam.semester',
+            'exam.examType',
+            'exam.grade',
+            'exam.subject',
+            'publisher.user'
+        ])
+        ->whereHas('student', function($q) use ($schoolId) {
+            $q->where('school_id', $schoolId);
         })
-        ->orderBy('admission_number')
-        ->paginate(25);
+        ->where('published', true);
 
-    $existingResults = ExamResult::where('exam_id', $exam->id)
-        ->pluck('marks_obtained', 'student_id');
+        // Apply filters
+        if ($request->filled('academic_year_id')) {
+            $query->whereHas('exam', function($q) use ($request) {
+                $q->where('academic_year_id', $request->academic_year_id);
+            });
+        }
 
-    return view('in.school.exams.results.index', compact('exam', 'students', 'existingResults'));
-}
+        if ($request->filled('semester_id')) {
+            $query->whereHas('exam', function($q) use ($request) {
+                $q->where('semester_id', $request->semester_id);
+            });
+        }
 
-public function examresult(Exam $exam)
-{
-    $user = Auth::user();
+        if ($request->filled('exam_type_id')) {
+            $query->whereHas('exam', function($q) use ($request) {
+                $q->where('exam_type_id', $request->exam_type_id);
+            });
+        }
 
-    // Authorization
-    if ($user->role !== 'superadmin' && $user->school_id !== $exam->school_id) {
-        abort(403);
+        if ($request->filled('grade_id')) {
+            $query->whereHas('exam', function($q) use ($request) {
+                $q->where('grade_id', $request->grade_id);
+            });
+        }
+
+        if ($request->filled('subject_id')) {
+            $query->whereHas('exam', function($q) use ($request) {
+                $q->where('subject_id', $request->subject_id);
+            });
+        }
+
+        // Search by student name or admission number
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->whereHas('student', function($q) use ($searchTerm) {
+                $q->where('admission_number', 'like', "%{$searchTerm}%")
+                  ->orWhere('fname', 'like', "%{$searchTerm}%")
+                  ->orWhere('mname', 'like', "%{$searchTerm}%")
+                  ->orWhere('lname', 'like', "%{$searchTerm}%")
+                  ->orWhereRaw("CONCAT(fname, ' ', COALESCE(mname, ''), ' ', lname) LIKE ?", ["%{$searchTerm}%"]);
+            });
+        }
+
+        // Get results with pagination
+        $results = $query->orderBy('created_at', 'desc')->paginate(50);
+
+        // Calculate statistics
+        $statistics = $this->calculateStatistics($query->clone());
+
+        return view('in.school.exam-results.index', compact(
+            'results',
+            'academicYears',
+            'semesters',
+            'examTypes',
+            'gradeLevels',
+            'subjects',
+            'statistics'
+        ));
     }
 
-    // Fetch exam results with student and user details
-    $results = ExamResult::with(['student.user'])
-        ->where('exam_id', $exam->id)
-        ->orderBy('marks_obtained', 'desc')
+    /**
+     * Get semesters for selected academic year (AJAX)
+     */
+    public function getSemesters(Request $request)
+    {
+        $semesters = Semester::where('academic_year_id', $request->academic_year_id)
+            ->orderBy('start_date')
+            ->get(['id', 'name']);
+
+        return response()->json($semesters);
+    }
+
+    /**
+     * Export exam results
+     */
+    public function export(Request $request)
+    {
+        $format = $request->input('format', 'excel');
+        $user = Auth::user();
+        $schoolId = $user->school_id;
+
+        // Build the same query as index method
+        $query = ExamResult::with([
+            'student.user',
+            'student.grade',
+            'student.section',
+            'exam.academicYear',
+            'exam.semester',
+            'exam.examType',
+            'exam.grade',
+            'exam.subject',
+            'publisher.user'
+        ])
+        ->whereHas('student', function($q) use ($schoolId) {
+            $q->where('school_id', $schoolId);
+        })
+        ->where('published', true);
+
+        // Apply the same filters
+        $this->applyFilters($query, $request);
+
+        $results = $query->orderBy('created_at', 'desc')->get();
+
+        $fileName = 'exam_results_' . now()->format('Y_m_d_H_i_s');
+
+        switch ($format) {
+            case 'pdf':
+                return $this->exportToPdf($results, $fileName);
+            case 'csv':
+                return $this->exportToCsv($results, $fileName);
+            case 'excel':
+            default:
+                return $this->exportToExcel($results, $fileName);
+        }
+    }
+
+    /**
+     * Export to Excel
+     */
+    private function exportToExcel($results, $fileName)
+    {
+        return Excel::download(new ExamResultsExport($results), $fileName . '.xlsx');
+    }
+
+    /**
+     * Export to CSV
+     */
+    private function exportToCsv($results, $fileName)
+    {
+        return Excel::download(new ExamResultsExport($results), $fileName . '.csv', \Maatwebsite\Excel\Excel::CSV);
+    }
+
+    /**
+     * Export to PDF
+     */
+    private function exportToPdf($results, $fileName)
+    {
+        $pdf = Pdf::loadView('in.school.exam-results.pdf', compact('results'));
+        return $pdf->download($fileName . '.pdf');
+    }
+
+    /**
+     * Apply filters to query
+     */
+    private function applyFilters($query, $request)
+    {
+        if ($request->filled('academic_year_id')) {
+            $query->whereHas('exam', function($q) use ($request) {
+                $q->where('academic_year_id', $request->academic_year_id);
+            });
+        }
+
+        if ($request->filled('semester_id')) {
+            $query->whereHas('exam', function($q) use ($request) {
+                $q->where('semester_id', $request->semester_id);
+            });
+        }
+
+        if ($request->filled('exam_type_id')) {
+            $query->whereHas('exam', function($q) use ($request) {
+                $q->where('exam_type_id', $request->exam_type_id);
+            });
+        }
+
+        if ($request->filled('grade_id')) {
+            $query->whereHas('exam', function($q) use ($request) {
+                $q->where('grade_id', $request->grade_id);
+            });
+        }
+
+        if ($request->filled('subject_id')) {
+            $query->whereHas('exam', function($q) use ($request) {
+                $q->where('subject_id', $request->subject_id);
+            });
+        }
+
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->whereHas('student', function($q) use ($searchTerm) {
+                $q->where('admission_number', 'like', "%{$searchTerm}%")
+                  ->orWhere('fname', 'like', "%{$searchTerm}%")
+                  ->orWhere('mname', 'like', "%{$searchTerm}%")
+                  ->orWhere('lname', 'like', "%{$searchTerm}%")
+                  ->orWhereRaw("CONCAT(fname, ' ', COALESCE(mname, ''), ' ', lname) LIKE ?", ["%{$searchTerm}%"]);
+            });
+        }
+    }
+
+    /**
+     * Calculate statistics for the current filter
+     */
+    private function calculateStatistics($query)
+    {
+        $results = $query->get();
+        
+        return [
+            'total_students' => $results->count(),
+            'total_exams' => $results->pluck('exam_id')->unique()->count(),
+            'average_marks' => $results->avg('marks_obtained'),
+            'highest_marks' => $results->max('marks_obtained'),
+            'lowest_marks' => $results->min('marks_obtained'),
+            'pass_rate' => $results->count() > 0 ? 
+                ($results->where('grade', '!=', 'F')->count() / $results->count()) * 100 : 0
+        ];
+    }
+
+    /**
+     * Show individual student result
+     */
+    public function show($id)
+    {
+        $result = ExamResult::with([
+            'student.user',
+            'student.grade',
+            'student.section',
+            'exam.academicYear',
+            'exam.semester',
+            'exam.examType',
+            'exam.grade',
+            'exam.subject',
+            'publisher.user'
+        ])->findOrFail($id);
+
+        // Check if user has permission to view this result
+        if ($result->student->school_id !== Auth::user()->school_id) {
+            abort(403, 'Unauthorized access to exam result.');
+        }
+
+        return view('in.school.exam-results.show', compact('result'));
+    }
+
+    /**
+     * Get student exam history
+     */
+    public function studentHistory($studentId)
+    {
+        $student = Student::where('user_id', $studentId)
+            ->where('school_id', Auth::user()->school_id)
+            ->firstOrFail();
+
+        $results = ExamResult::with([
+            'exam.academicYear',
+            'exam.semester',
+            'exam.examType',
+            'exam.subject'
+        ])
+        ->where('student_id', $studentId)
+        ->where('published', true)
+        ->orderBy('created_at', 'desc')
         ->paginate(20);
 
-    return view('in.school.exams.results.examresult', compact('exam', 'results'));
-}
-
-    public function create()
-    {
-        $schoolId = auth()->user()->school_id;
-
-        return view('in.school.exams.results.create', [
-            'exams' => Exam::where('school_id', $schoolId)->get(),
-            'students' => Student::where('school_id', $schoolId)->get(),
-        ]);
+        return view('in.school.exam-results.student-history', compact('student', 'results'));
     }
 
-    
-public function store(Request $request, Exam $exam)
-{
-    $data = $request->input('results', []);
 
-    foreach ($data as $studentId => $score) {
-        if ($score === null || $score === '') continue;
 
-        $grade = Grade::where('school_id', $exam->school_id)
-            ->where('min_score', '<=', $score)
-            ->where('max_score', '>=', $score)
-            ->first();
 
-        ExamResult::updateOrCreate(
-            ['exam_id' => $exam->id, 'student_id' => $studentId],
-            [
-                'school_id' => $exam->school_id,
-                'marks_obtained' => $score,
-                'grade' => $grade->grade_letter ?? 'N/A',
-                'remarks' => $grade->remarks ?? null,
-            ]
-        );
-    }
 
-    return back()->with('success', 'Results saved successfully.');
-}
-    public function show(ExamResult $examResult)
-    {
-        $this->authorizeAccess($examResult);
-        return view('in.school.exams.results.show', compact('examResult'));
-    }
 
-    public function edit(ExamResult $examResult)
-    {
-        $this->authorizeAccess($examResult);
-
-        $schoolId = auth()->user()->school_id;
-
-        return view('in.school.exams.results.edit', [
-            'examResult' => $examResult,
-            'exams' => Exam::where('school_id', $schoolId)->get(),
-            'students' => Student::where('school_id', $schoolId)->get(),
-        ]);
-    }
-
-    public function update(Request $request, ExamResult $examResult)
-    {
-        $this->authorizeAccess($examResult);
-
-        $request->validate([
-            'marks_obtained' => 'required|numeric|min:0',
-            'grade' => 'required|string|max:5',
-            'remarks' => 'nullable|string|max:1000',
-        ]);
-
-        $examResult->update([
-            'marks_obtained' => $request->marks_obtained,
-            'grade' => $request->grade,
-            'remarks' => $request->remarks,
-        ]);
-
-        return redirect()->route('exam-results.index')->with('success', 'Result updated successfully.');
-    }
-
-    public function destroy(ExamResult $examResult)
-    {
-        $this->authorizeAccess($examResult);
-        $examResult->delete();
-
-        return redirect()->route('exam-results.index')->with('success', 'Result deleted.');
-    }
-
-    public function publish(ExamResult $examResult)
-    {
-        $this->authorizeAccess($examResult);
-
-        $examResult->update([
-            'published' => true,
-            'published_by' => auth()->user()->id,
-            'published_at' => now(),
-        ]);
-
-        return redirect()->route('exam-results.index')->with('success', 'Result published.');
-    }
 
 
     public function generalResults(Request $request)
@@ -157,7 +326,7 @@ public function store(Request $request, Exam $exam)
     $user = auth()->user();
     $schoolId = $user->school_id;
 
-    $query = ExamResult::with(['student.user', 'exam.subject', 'exam.examType', 'exam.academicYear'])
+    $query = ExamResult::with(['student.user', 'exam.subject', 'exam.examType', 'exam.academicYear', 'exam.semester'])
         ->where('school_id', $schoolId);
 
     if ($request->filled('grade_id')) {
@@ -166,6 +335,13 @@ public function store(Request $request, Exam $exam)
 
     if ($request->filled('academic_year_id')) {
         $query->whereHas('exam', fn($q) => $q->where('academic_year_id', $request->academic_year_id));
+    }
+
+    if ($request->filled('semester_id')) {
+        $query->whereHas('exam', fn($q) => $q->where('semester_id', $request->semester_id));
+    }
+    if ($request->filled('exam_type_id')) {
+        $query->whereHas('exam', fn($q) => $q->where('exam_type_id', $request->exam_type_id));
     }
 
     if ($request->filled('subject_id')) {
@@ -177,8 +353,10 @@ public function store(Request $request, Exam $exam)
     $academicYears = \App\Models\AcademicYear::where('school_id', $schoolId)->latest()->get();
     $subjects = \App\Models\Subject::where('school_id', $schoolId)->get();
     $grades = \App\Models\GradeLevel::where('school_id', $schoolId)->get();
+    $semesters = \App\Models\Semester::where('school_id', $schoolId)->get();
+    $examTypes = \App\Models\ExamType::where('school_id', $schoolId)->get();
 
-    return view('in.school.exams.results.general', compact('results', 'academicYears', 'subjects', 'grades'));
+    return view('in.school.exams.results.general', compact('results', 'academicYears', 'subjects', 'grades', 'semesters', 'examTypes'));
 }
 
 
@@ -230,5 +408,7 @@ public function import(Request $request, Exam $exam)
 
     return redirect()->route('exam-results.index')->with('success', 'Exam results imported successfully.');
 }
+
+
 
 }

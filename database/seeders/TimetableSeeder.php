@@ -26,7 +26,7 @@ class TimetableSeeder extends Seeder
             'code' => 'AY2024-25',
             'start_date' => '2024-09-01',
             'end_date' => '2025-07-31',
-            'status' => 'active',
+            'status' => '1',
             'description' => 'Academic Year 2024/2025'
         ]);
 

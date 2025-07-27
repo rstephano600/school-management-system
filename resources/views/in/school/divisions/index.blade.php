@@ -8,10 +8,13 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+
+    @if(Auth::user()->role === 'super_admin')
     <form method="GET" class="row mb-3">
-        <div class="col-md-4">
+    <div class="col-md-4">
             <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Search by Division...">
         </div>
+        
         <div class="col-md-4">
             <select name="school_id" class="form-select">
                 <option value="">-- Filter by School --</option>
@@ -28,6 +31,10 @@
             <a href="{{ route('divisions.create') }}" class="btn btn-success float-end">+ Add Division</a>
         </div>
     </form>
+@endif
+
+            <a href="{{ route('divisions.create') }}" class="btn btn-success mb-3">+ Add Division</a>
+
 
     <table class="table table-bordered table-hover">
         <thead class="table-light">
@@ -37,7 +44,7 @@
                 <th>Min Point</th>
                 <th>Max Point</th>
                 <th>Remarks</th>
-                <th>School</th>
+                <!-- <th>School</th> -->
                 <th>Actions</th>
             </tr>
         </thead>
@@ -49,7 +56,7 @@
                     <td>{{ $division->min_point }}</td>
                     <td>{{ $division->max_point }}</td>
                     <td>{{ $division->remarks }}</td>
-                    <td>{{ $division->school->name ?? 'N/A' }}</td>
+                    <!-- <td>{{ $division->school->name ?? 'N/A' }}</td> -->
                     <td>
                         <a href="{{ route('divisions.edit', $division) }}" class="btn btn-sm btn-warning">Edit</a>
                         <form action="{{ route('divisions.destroy', $division) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?');">
